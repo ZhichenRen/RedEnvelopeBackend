@@ -1,2 +1,3 @@
 # RedEnvelopeBackend
 这是一个红包雨的后端项目。😺
+添加了Redis测试
