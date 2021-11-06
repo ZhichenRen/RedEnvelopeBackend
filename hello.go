@@ -49,7 +49,7 @@ func redisExample() {
 	}
 }
 
-func SnatchHandler(c *gin.Context){
+func SnatchHandler(c *gin.Context) {
 	userId, _ := c.GetPostForm("uid")
 	fmt.Println(userId)
 	envelopeId := 123
@@ -58,16 +58,16 @@ func SnatchHandler(c *gin.Context){
 
 	c.JSON(200, gin.H{
 		"code": 0,
-		"msg": "success",
+		"msg":  "success",
 		"data": gin.H{
 			"envelop_id": envelopeId,
-			"max_count": maxCount,
-			"cur_count" : curCount,
+			"max_count":  maxCount,
+			"cur_count":  curCount,
 		},
 	})
 }
 
-func OpenHandler(c *gin.Context){
+func OpenHandler(c *gin.Context) {
 	userId, _ := c.GetPostForm("uid")
 	fmt.Println(userId)
 
@@ -75,22 +75,22 @@ func OpenHandler(c *gin.Context){
 
 	c.JSON(200, gin.H{
 		"code": 0,
-		"msg": "success",
+		"msg":  "success",
 		"data": gin.H{
 			"value": value,
 		},
 	})
 }
 
-func WalletListHandler(c *gin.Context){
+func WalletListHandler(c *gin.Context) {
 	userId, _ := c.GetPostForm("uid")
 	fmt.Println(userId)
 
 	envelops := []gin.H{
 		{
-			"envelop_id": 123,
-			"value": 50,
-			"opened": true,
+			"envelop_id":  123,
+			"value":       50,
+			"opened":      true,
 			"snatch_time": 1634551711,
 		},
 	}
@@ -98,15 +98,15 @@ func WalletListHandler(c *gin.Context){
 
 	c.JSON(200, gin.H{
 		"code": 0,
-		"msg": "success",
+		"msg":  "success",
 		"data": gin.H{
-			"amount": amount,
+			"amount":        amount,
 			"envelope_list": envelops,
 		},
 	})
 }
 
-func Ping(c* gin.Context){
+func Ping(c *gin.Context) {
 	countString, getError := rdb.Get("count").Result()
 	var value int
 	if getError == nil {
@@ -141,4 +141,3 @@ func main() {
 	r.POST("/get_wallet_list", WalletListHandler)
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
-
