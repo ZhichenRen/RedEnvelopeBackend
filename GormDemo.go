@@ -1,39 +1,58 @@
 package main
 
+// TODO
+// or mey a question
+// how to connect to different scheme
 import (
-	"gorm.io/driver/sqlite"
+	"fmt"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-type Product struct {
-	gorm.Model
-	Code  string
-	Price uint
+// Config : db config
+type Config struct {
+	// gorm.Model
+	username string
+	password string
+	host     string
+	port     uint
+	dbName   string
+	timeout  string
+}
+
+type Envelope struct {
+	envelope   string
+	value      int
+	opened     bool
+	snatchTime int64 // we may change the type into timestamp?
 }
 
 func main() {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	// set the config
+	var config Config
+	config = Config{
+		"group9",
+		"Group9@haha",
+		"124.238.238.165",
+		3306,
+		"group9",
+		"10s",
+	}
+	// dsn
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local&timeout=%s",
+		config.username, config.password, config.host, config.port, config.dbName, config.timeout)
+	// connect to mysql
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database")
+		panic("Failed, error=" + err.Error())
 	}
 
-	// Migrate the schema
-	db.AutoMigrate(&Product{})
-
-	// Create
-	db.Create(&Product{Code: "D42", Price: 100})
-
-	// Read
-	var product Product
-	db.First(&product, 1)                 // find product with integer primary key
-	db.First(&product, "code = ?", "D42") // find product with code D42
-
-	// Update - update product's price to 200
-	db.Model(&product).Update("Price", 200)
-	// Update - update multiple fields
-	db.Model(&product).Updates(Product{Price: 200, Code: "F42"}) // non-zero fields
-	db.Model(&product).Updates(map[string]interface{}{"Price": 200, "Code": "F42"})
-
-	// Delete - delete product
-	db.Delete(&product, 1)
+	var envelope Envelope
+	envelope = Envelope{
+		"red",
+		1,
+		false,
+		20,
+	}
+	fmt.Println(db.Create(&envelope).Error)
 }
