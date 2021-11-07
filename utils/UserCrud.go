@@ -6,13 +6,13 @@ import (
 )
 
 type User struct {
-	ID       string `gorm:"size:10"`
-	CurCount int    `json:"curCount"`
-	Amount   int    `json:"amount"`
+	ID       int64
+	CurCount int `json:"cur_count"`
+	Amount   int `json:"amount"`
 }
 
 // find user by user id
-func getUser(uid string) (user User) {
+func getUser(uid int64) (user User) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
