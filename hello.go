@@ -12,34 +12,6 @@ import (
 
 var rdb *redis.Client
 
-type Envelope struct {
-	EnvelopeId string
-	Value int
-	Opened bool
-	SnatchTime int64
-}
-
-type User struct {
-	CurCount int
-	Amount int
-	EnvelopeList []string
-}
-
-func initClient() (err error) {
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     "221.194.149.10:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-
-	_, err = rdb.Ping().Result()
-	if err != nil {
-		return err
-	}
-	fmt.Println("Connect successfully!")
-	return nil
-}
-
 func SnatchHandler(c *gin.Context){
 	userId, _ := c.GetPostForm("uid")
 	user, err := rdb.HGetAll("User:" + userId).Result()

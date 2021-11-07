@@ -1,4 +1,4 @@
-package main
+package dao
 
 import (
 	"gorm.io/driver/mysql"
@@ -12,7 +12,7 @@ type User struct {
 }
 
 // find user by user id
-func getUser(uid string) (user User) {
+func GetUser(uid string) (user User) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -24,7 +24,7 @@ func getUser(uid string) (user User) {
 }
 
 // create a user
-func createUser(user User) {
+func CreateUser(user User) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -36,7 +36,7 @@ func createUser(user User) {
 }
 
 // update CurCount, concretely, user grab a red envelope
-func updateCurCount(user *User) {
+func UpdateCurCount(user *User) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -48,7 +48,7 @@ func updateCurCount(user *User) {
 }
 
 // update amount, concretely, user grab a red envelope
-func updateAmount(user *User, money int) {
+func UpdateAmount(user *User, money int) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -66,6 +66,6 @@ func updateAmount(user *User, money int) {
 // optimize it
 // delete two function above?
 func updateUser(user *User, money int) {
-	updateCurCount(user)
-	updateAmount(user, money)
+	UpdateCurCount(user)
+	UpdateAmount(user, money)
 }

@@ -1,4 +1,4 @@
-package main
+package dao
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ func (Envelope) TableName() string {
 	return "envelopes"
 }
 
-func getEnvelopesByUID(uid string) ([]*Envelope, error) {
+func GetEnvelopesByUID(uid string) ([]*Envelope, error) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -42,7 +42,7 @@ func getEnvelopesByUID(uid string) ([]*Envelope, error) {
 	return envelopes, nil
 }
 
-func getEnvelopeByEID(EID string) (envelope Envelope) {
+func GetEnvelopeByEID(EID string) (envelope Envelope) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -53,7 +53,7 @@ func getEnvelopeByEID(EID string) (envelope Envelope) {
 	return envelope
 }
 
-func createEnvelope(user User) (envelope Envelope) {
+func CreateEnvelope(user User) (envelope Envelope) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
