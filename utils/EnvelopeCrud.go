@@ -69,10 +69,3 @@ func createEnvelope(user User) (envelope Envelope) {
 	db.Create(&envelope)
 	return envelope
 }
-
-func main() {
-	//user := getUser("123")
-	envelopes, _ := getEnvelopesByUID("123") //createEnvelope(user)
-	fmt.Println(envelopes[0].UID, envelopes[0].Opened, envelopes[0].Value, envelopes[1].SnatchTime)
-
-}
