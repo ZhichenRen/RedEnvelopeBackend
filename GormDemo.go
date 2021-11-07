@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 // Config : db config
@@ -21,10 +22,10 @@ type Config struct {
 }
 
 type Envelope struct {
-	envelope   string
+	envelopeId string `gorm:"primaryKey"`
 	value      int
 	opened     int8
-	snatchTime int64 // we may change the type into timestamp?
+	snatchTime int64
 }
 
 func main() {
@@ -42,18 +43,18 @@ func main() {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local&timeout=%s",
 		config.username, config.password, config.host, config.port, config.dbName, config.timeout)
 	// connect to mysql
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	})
 	if err != nil {
 		panic("Failed, error=" + err.Error())
 	}
 
+	//db.Model(&Envelope{}).Where("value = ?", 12).Update("value", 32)
+	//envelope := db.Model(&Envelope{}).Where("envelopeId = ?", "123")
 	var envelope Envelope
-	envelope = Envelope{
-		"red",
-		1,
-		0,
-		100,
-	}
-	fmt.Println(db.Create(&envelope).Error)
-
+	db.Model(Envelope{}).Where("envelopId = ?", "123").First(envelope.envelopeId)
+	fmt.Println(envelope.snatchTime)
 }
