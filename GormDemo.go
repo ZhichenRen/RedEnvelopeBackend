@@ -2,7 +2,7 @@ package main
 
 // TODO
 // or mey a question
-// how to connect to different scheme
+// how to connect to different schema
 import (
 	"fmt"
 	"gorm.io/driver/mysql"
@@ -23,7 +23,7 @@ type Config struct {
 type Envelope struct {
 	envelope   string
 	value      int
-	opened     bool
+	opened     int8
 	snatchTime int64 // we may change the type into timestamp?
 }
 
@@ -35,7 +35,7 @@ func main() {
 		"Group9@haha",
 		"124.238.238.165",
 		3306,
-		"group9",
+		"red_envelope",
 		"10s",
 	}
 	// dsn
@@ -51,8 +51,9 @@ func main() {
 	envelope = Envelope{
 		"red",
 		1,
-		false,
-		20,
+		0,
+		100,
 	}
 	fmt.Println(db.Create(&envelope).Error)
+
 }
