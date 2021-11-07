@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 	"go-web/database"
+	"math/rand"
 	"strconv"
 	"time"
 )
@@ -80,7 +81,7 @@ func SnatchHandler(c *gin.Context){
 		}
 		fmt.Println("Envelope:", envelope)
 
-		_, err = rdb.LPush("User:" + userId + ":Envelopes", envelopeId).Result()
+		_, err = rdb.SAdd("User:" + userId + ":Envelopes", envelopeId).Result()
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -103,39 +104,82 @@ func SnatchHandler(c *gin.Context){
 
 func OpenHandler(c *gin.Context){
 	userId, _ := c.GetPostForm("uid")
-	fmt.Println(userId)
+	envelopeId, _ := c.GetPostForm("envelope_id")
 
-	value := 50
+	result, err := rdb.SIsMember("User:" + userId + ":Envelopes", envelopeId).Result()
+	if err != nil {
+		fmt.Println(err)
+	}
+	if result == true {
+		opened, err := rdb.HGet("Envelope:" + envelopeId, "Opened").Result()
+		if err != nil {
+			fmt.Println(err)
+		}
+		if opened != "0" {
+			c.JSON(200, gin.H{
+				"code": 0,
+				"msg": "您已经打开了此红包",
+			})
+		}
+		maxAmount, err := rdb.Get("MaxAmount").Int()
+		value := rand.Intn(maxAmount)
 
-	c.JSON(200, gin.H{
-		"code": 0,
-		"msg": "success",
-		"data": gin.H{
-			"value": value,
-		},
-	})
+		err = rdb.HSet("Envelope:" + envelopeId, "Opened", true).Err()
+		err = rdb.HSet("Envelope:" + envelopeId, "Value", value).Err()
+		err = rdb.HIncrBy("User:" + userId, "Amount", int64(value)).Err()
+
+		c.JSON(200, gin.H{
+			"code": 0,
+			"msg": "success",
+			"data": gin.H{
+				"value": value,
+			},
+		})
+
+	} else {
+		c.JSON(200, gin.H{
+			"code": 0,
+			"msg": "您并不拥有此红包",
+		})
+	}
 }
 
 func WalletListHandler(c *gin.Context){
 	userId, _ := c.GetPostForm("uid")
 	fmt.Println(userId)
 
-	envelops := []gin.H{
-		{
-			"envelop_id": 123,
-			"value": 50,
-			"opened": true,
-			"snatch_time": 1634551711,
-		},
+	envelopeList, err := rdb.SMembers("User:" + userId + ":Envelopes").Result()
+	if err != nil {
+		fmt.Println(err)
 	}
-	amount := 50
+	fmt.Println(envelopeList)
+	var data []gin.H
+	for _, envelopeId := range envelopeList {
+		envelope, err := rdb.HGetAll("Envelope:" + envelopeId).Result()
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(envelope)
+		tmp := gin.H{}
+		tmp["envelope_id"] = envelopeId
+		tmp["snatch_time"] = envelope["SnatchTime"]
+		if envelope["Opened"] == "0" {
+			tmp["opened"] = false
+		} else {
+			tmp["opened"] = true
+			tmp["value"] = envelope["Value"]
+		}
+		data = append(data, tmp)
+	}
+
+	amount, err := rdb.HGet("User:" + userId, "Amount").Result()
 
 	c.JSON(200, gin.H{
 		"code": 0,
 		"msg": "success",
 		"data": gin.H{
 			"amount": amount,
-			"envelope_list": envelops,
+			"envelope_list": data,
 		},
 	})
 }
@@ -166,29 +210,5 @@ func main() {
 	r.POST("/open", OpenHandler)
 	r.POST("/get_wallet_list", WalletListHandler)
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
-
-	//envelopeId , err := rdb.Get("EnvelopeId").Result()
-	//if err == nil {
-	//	rdb.Incr("EnvelopeId")
-	//	envelope := &Envelope{
-	//		EnvelopeId: envelopeId,
-	//		Value: 0,
-	//		Opened: false,
-	//		SnatchTime: time.Now().Unix(),
-	//	}
-	//	data, _ := json.Marshal(envelope)
-	//	err := rdb.Set(envelopeId, data, -1).Err()
-	//	if err != nil {
-	//		fmt.Println(err)
-	//	}
-	//}
-	//
-	//envelopeJson, err := rdb.Get("100000000000").Result()
-	//if err == nil {
-	//	var envelope Envelope
-	//	json.Unmarshal([]byte(envelopeJson), &envelope)
-	//	fmt.Println(envelope)
-	//}
-
 }
 
