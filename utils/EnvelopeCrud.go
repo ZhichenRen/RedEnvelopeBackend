@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"go-web/allocate"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"sort"
@@ -60,9 +61,7 @@ func CreateEnvelope(uid int64) (envelope Envelope, user User, err error) {
 		fmt.Println(err)
 	}
 	snatchTime := time.Now().UnixNano()
-	// TODO
-	// value should be a random number
-	value := 10
+	value := allocate.MoneyAllocate()
 	// TODO
 	// maxCount
 	err = db.Where("cur_count < ?", 50).First(&user, User{ID: uid}).Error

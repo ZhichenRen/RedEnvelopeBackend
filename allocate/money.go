@@ -32,16 +32,16 @@ func Init() {
 	rand.Seed(time.Now().Unix())
 }
 
-func MoneyAllocate() (value int64) {
+func MoneyAllocate() (value int) {
 	mu := float64(moneyLeft) / float64(envelopeLeft)
 	minAllocate = (1 - deviation) * mu
 	maxAllocate = (1 + deviation) * mu
 	sigma := (mu - minAllocate) / 2
-	value = int64(standardNormal(mu, sigma))
-	if value > moneyLeft {
-		value = moneyLeft
+	value = int(standardNormal(mu, sigma))
+	if int64(value) > moneyLeft {
+		value = int(moneyLeft)
 	}
-	moneyLeft -= value
+	moneyLeft -= int64(value)
 	envelopeLeft -= 1
 	fmt.Print("moneyLeft:")
 	fmt.Println(moneyLeft)

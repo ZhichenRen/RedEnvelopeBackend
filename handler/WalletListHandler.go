@@ -19,13 +19,10 @@ func WalletListHandler(c *gin.Context) {
 	var amount int
 	var data []gin.H
 	if len(users) == 0 {
-		userInfo := make(map[string]interface{})
 		user, _ := utils.GetUser(uid)
 		amount = user.Amount
 		curCount = user.CurCount
-		userInfo["cur_count"] = user.CurCount
-		userInfo["amount"] = user.Amount
-		rdb.HMSet("User:"+userId, userInfo)
+		writeUserToRedis(user)
 	} else {
 		curCount, _ = strconv.Atoi(users["cur_count"])
 		amount, _ = strconv.Atoi(users["amount"])
@@ -36,7 +33,6 @@ func WalletListHandler(c *gin.Context) {
 			if err != nil {
 				fmt.Println(err)
 			}
-
 			if len(envelope) != 0 {
 				tmp := gin.H{}
 				tmp["envelope_id"] = envelopeId
@@ -60,18 +56,12 @@ func WalletListHandler(c *gin.Context) {
 					tmp["opened"] = true
 					tmp["value"] = envelopeFromSql.Value
 				}
-				envelopeInfo := make(map[string]interface{})
-				envelopeInfo["uid"] = envelopeFromSql.UID
-				envelopeInfo["opened"] = envelopeFromSql.Opened
-				envelopeInfo["value"] = envelopeFromSql.Value
-				rdb.HMSet("Envelope:"+envelopeId, envelopeInfo)
+				writeEnvelopeToRedis(envelopeFromSql)
 				data = append(data, tmp)
 			}
 		}
 	} else {
-		fmt.Println(666)
 		envelopes, _ := utils.GetEnvelopesByUID(uid)
-		envelopeInfo := make(map[string]interface{})
 		for _, envelope := range envelopes {
 			tmp := gin.H{}
 			tmp["envelope_id"] = envelope.ID
@@ -82,11 +72,8 @@ func WalletListHandler(c *gin.Context) {
 				tmp["opened"] = true
 				tmp["value"] = envelope.Value
 			}
-			envelopeInfo["uid"] = envelope.UID
-			envelopeInfo["opened"] = envelope.Opened
-			envelopeInfo["value"] = envelope.Value
-			rdb.HMSet("Envelope:"+strconv.Itoa(int(envelope.ID)), envelopeInfo)
-			_, err = rdb.SAdd("User:"+userId+":Envelopes", strconv.Itoa(int(envelope.ID))).Result()
+			writeEnvelopeToRedis(*envelope)
+			writeEnvelopesSet(*envelope, userId)
 			data = append(data, tmp)
 		}
 	}
