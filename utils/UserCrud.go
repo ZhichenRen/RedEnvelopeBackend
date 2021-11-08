@@ -1,4 +1,4 @@
-package dao
+package utils
 
 import (
 	"gorm.io/driver/mysql"
@@ -6,25 +6,26 @@ import (
 )
 
 type User struct {
-	ID       string `gorm:"size:10"`
-	CurCount int    `json:"curCount"`
-	Amount   int    `json:"amount"`
+	ID       int64
+	CurCount int `json:"cur_count"`
+	Amount   int `json:"amount"`
 }
 
 // find user by user id
-func GetUser(uid string) (user User) {
+
+func GetUser(uid int64) (user User, err error) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
-	} // Migrate the schema
-	db.FirstOrCreate(&user, User{ID: uid})
+	}
+	err = db.First(&user, User{ID: uid}).Error
 	return
 }
 
 // create a user
-func CreateUser(user User) {
+func createUser(user User) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -36,7 +37,7 @@ func CreateUser(user User) {
 }
 
 // update CurCount, concretely, user grab a red envelope
-func UpdateCurCount(user *User) {
+func updateCurCount(user *User) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -48,7 +49,7 @@ func UpdateCurCount(user *User) {
 }
 
 // update amount, concretely, user grab a red envelope
-func UpdateAmount(user *User, money int) {
+func updateAmount(user *User, money int) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -66,6 +67,6 @@ func UpdateAmount(user *User, money int) {
 // optimize it
 // delete two function above?
 func updateUser(user *User, money int) {
-	UpdateCurCount(user)
-	UpdateAmount(user, money)
+	updateCurCount(user)
+	updateAmount(user, money)
 }
