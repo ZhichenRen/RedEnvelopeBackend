@@ -3,10 +3,17 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"go-web/allocate"
 	"go-web/handler"
 )
 
 func main() {
+
+	allocate.Init()
+	for i := 0; i <= 10; i++ {
+		fmt.Println(allocate.MoneyAllocate())
+	}
+
 	err := handler.InitClient()
 	if err != nil {
 		fmt.Println("Connection failed")
