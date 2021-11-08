@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"sort"
 	"time"
 )
 
@@ -34,6 +35,9 @@ func GetEnvelopesByUID(uid int64) ([]*Envelope, error) {
 	if err != nil {
 		return nil, err
 	}
+	sort.SliceStable(envelopes, func(i, j int) bool {
+		return envelopes[i].SnatchTime < envelopes[j].SnatchTime
+	})
 	return envelopes, nil
 }
 
@@ -69,8 +73,25 @@ func CreateEnvelope(uid int64) (envelope Envelope, user User, err error) {
 		// there should be a error check
 		db.Create(&envelope)
 		user.CurCount++
-		user.Amount += value
 		db.Save(&user)
 	}
 	return envelope, user, err
+}
+
+func OpenEnvelope(uid int64, eid int64) (envelope Envelope, user User, err error) {
+	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
+	// connect to mysql
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = db.First(&envelope, Envelope{ID: eid, UID: uid, Opened: false}).Error
+	db.First(&user, User{ID: uid})
+	if err == nil {
+		envelope.Opened = true
+		user.Amount += envelope.Value
+		db.Model(&user).Update("amount", user.Amount)
+		db.Model(&envelope).Update("opened", envelope.Opened)
+	}
+	return
 }

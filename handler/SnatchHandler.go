@@ -17,19 +17,20 @@ func SnatchHandler(c *gin.Context) {
 	// TODO how to get maxCount
 	// maxCount, err := rdb.Get("MaxCount").Result()
 	maxCount := 100
-	curCount, _ := strconv.Atoi(users["curCount"])
+	curCount, _ := strconv.Atoi(users["cur_count"])
 	// 开始对接
 	if len(users) == 0 {
 		userInfo := make(map[string]interface{})
 		newEnvelope, user, err := utils.CreateEnvelope(uid)
 		if err == nil {
-			userInfo["CurCount"] = user.CurCount
-			userInfo["Amount"] = user.Amount
+			userInfo["cur_count"] = user.CurCount
+			userInfo["amount"] = user.Amount
 			rdb.HMSet("User:"+userId, userInfo)
 			users, err = rdb.HGetAll("User:" + userId).Result()
 			if err != nil {
 				fmt.Println(err)
 			}
+			_, err = rdb.SAdd("User:"+userId+":Envelopes", strconv.Itoa(int(newEnvelope.ID))).Result()
 			c.JSON(200, gin.H{
 				"code": 0,
 				"msg":  "success",
@@ -43,11 +44,6 @@ func SnatchHandler(c *gin.Context) {
 			c.JSON(200, gin.H{
 				"code": 1,
 				"msg":  "failed",
-				"data": gin.H{
-					"envelop_id": 0,
-					"max_count":  0,
-					"cur_count":  0,
-				},
 			})
 		}
 	} else if curCount < maxCount {
@@ -59,25 +55,24 @@ func SnatchHandler(c *gin.Context) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		curCount, err := rdb.HIncrBy("User:"+userId, "CurCount", 1).Result()
+		curCount, err := rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
 		if err != nil {
 			fmt.Println(err)
 		}
-		envelope := make(map[string]interface{})
+		envelopeInfo := make(map[string]interface{})
 		// TODO
 		// value should be random
 		newEnvelope, _, err := utils.CreateEnvelope(uid)
-		envelope["Value"] = newEnvelope.Value
-		envelope["Opened"] = newEnvelope.Opened
-		envelope["SnatchTime"] = newEnvelope.SnatchTime
-		envelope["EnvelopeId"] = newEnvelope.ID
-		_, err = rdb.HMSet("Envelope:"+strconv.Itoa(int(newEnvelope.ID)), envelope).Result()
+		envelopeInfo["value"] = newEnvelope.Value
+		envelopeInfo["opened"] = newEnvelope.Opened
+		envelopeInfo["snatch_time"] = newEnvelope.SnatchTime
+		_, err = rdb.HMSet("Envelope:"+strconv.Itoa(int(newEnvelope.ID)), envelopeInfo).Result()
+		_, err = rdb.SAdd("User:"+userId+":Envelopes", strconv.Itoa(int(newEnvelope.ID))).Result()
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Println("Envelope:", envelope)
 
-		_, err = rdb.SAdd("User:"+userId+":Envelopes", newEnvelope.ID).Result()
+		//_, err = rdb.SAdd("User:"+userId+":Envelopes", newEnvelope.ID).Result()
 		if err != nil {
 			fmt.Println(err)
 		}

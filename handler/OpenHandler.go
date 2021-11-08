@@ -3,18 +3,24 @@ package handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"math/rand"
+	"go-web/utils"
+	"strconv"
 )
 
 func OpenHandler(c *gin.Context) {
 	userId, _ := c.GetPostForm("uid")
 	envelopeId, _ := c.GetPostForm("envelope_id")
-	result, err := rdb.SIsMember("User:"+userId+":Envelopes", envelopeId).Result()
+	uid, _ := strconv.ParseInt(userId, 10, 64)
+	eid, _ := strconv.ParseInt(envelopeId, 10, 64)
+	//result, err := rdb.SIsMember("User:"+userId+":Envelopes", envelopeId).Result()
+	envelopes, err := rdb.HGetAll("Envelope:" + envelopeId).Result()
 	if err != nil {
 		fmt.Println(err)
 	}
-	if result == true {
-		opened, err := rdb.HGet("Envelope:"+envelopeId, "Opened").Result()
+	if len(envelopes) != 0 {
+		opened := envelopes["opened"]
+		value := envelopes["value"]
+		realUId := envelopes["uid"]
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -23,26 +29,52 @@ func OpenHandler(c *gin.Context) {
 				"code":    0,
 				"message": "您已经打开了此红包",
 			})
+		} else if opened == "0" && userId == realUId {
+			_, user, _ := utils.OpenEnvelope(uid, eid)
+			err = rdb.HSet("Envelope:"+envelopeId, "opened", true).Err()
+			userInfo := make(map[string]interface{})
+			userInfo["cur_count"] = user.CurCount
+			userInfo["amount"] = user.Amount
+			rdb.HMSet("User:"+userId, userInfo)
+			c.JSON(200, gin.H{
+				"code":    0,
+				"message": "success",
+				"data": gin.H{
+					"value": value,
+				},
+			})
+		} else {
+			c.JSON(200, gin.H{
+				"code":    0,
+				"message": "no authorization",
+			})
 		}
-		maxAmount, err := rdb.Get("MaxAmount").Int()
-		value := rand.Intn(maxAmount)
-
-		err = rdb.HSet("Envelope:"+envelopeId, "Opened", true).Err()
-		err = rdb.HSet("Envelope:"+envelopeId, "Value", value).Err()
-		err = rdb.HIncrBy("User:"+userId, "Amount", int64(value)).Err()
-
-		c.JSON(200, gin.H{
-			"code":    0,
-			"message": "success",
-			"data": gin.H{
-				"value": value,
-			},
-		})
 
 	} else {
-		c.JSON(200, gin.H{
-			"code":    0,
-			"message": "您并不拥有此红包",
-		})
+		envelope, user, err := utils.OpenEnvelope(uid, eid)
+		if err == nil {
+			userInfo := make(map[string]interface{})
+			userInfo["cur_count"] = user.CurCount
+			userInfo["amount"] = user.Amount
+			envelopeInfo := make(map[string]interface{})
+			envelopeInfo["id"] = envelope.ID
+			envelopeInfo["uid"] = envelope.UID
+			envelopeInfo["opened"] = envelope.Opened
+			envelopeInfo["value"] = envelope.Value
+			rdb.HMSet("Envelope:"+envelopeId, envelopeInfo)
+			rdb.HMSet("User:"+userId, userInfo)
+			c.JSON(200, gin.H{
+				"code":    0,
+				"message": "success",
+				"data": gin.H{
+					"value": envelope.Value,
+				},
+			})
+		} else {
+			c.JSON(200, gin.H{
+				"code":    1,
+				"message": "fail",
+			})
+		}
 	}
 }

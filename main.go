@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-web/handler"
-	"go-web/utils"
 )
 
 func main() {
@@ -15,12 +14,10 @@ func main() {
 	}
 
 	fmt.Println("Connection succeeded")
-	_, _, err = utils.CreateEnvelope(int64(123))
-	fmt.Println(err)
 	r := gin.Default()
 	//r.GET("/ping", handler.Ping)
 	r.POST("/snatch", handler.SnatchHandler)
-	//r.POST("/open", OpenHandler)
-	//r.POST("/get_wallet_list", WalletListHandler)
+	r.POST("/open", handler.OpenHandler)
+	r.POST("/get_wallet_list", handler.WalletListHandler)
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
