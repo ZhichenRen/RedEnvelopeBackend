@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"gorm.io/driver/mysql"
@@ -12,14 +12,15 @@ type User struct {
 }
 
 // find user by user id
-func getUser(uid int64) (user User) {
+
+func GetUser(uid int64) (user User, err error) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
-	} // Migrate the schema
-	db.FirstOrCreate(&user, User{ID: uid})
+	}
+	err = db.First(&user, User{ID: uid}).Error
 	return
 }
 

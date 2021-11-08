@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"fmt"
@@ -48,7 +48,7 @@ func GetEnvelopeByEID(eid int64) (envelope Envelope) {
 	return envelope
 }
 
-func CreateEnvelope(user User) (envelope Envelope) {
+func CreateEnvelope(uid int64) (envelope Envelope, user User, err error) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -59,8 +59,18 @@ func CreateEnvelope(user User) (envelope Envelope) {
 	// TODO
 	// value should be a random number
 	value := 10
-	ID := 456
-	envelope = Envelope{ID: int64(ID), UID: user.ID, Opened: false, Value: value, SnatchTime: snatchTime}
-	db.Create(&envelope)
-	return envelope
+	// TODO
+	// maxCount
+	err = db.Where("cur_count < ?", 50).First(&user, User{ID: uid}).Error
+	if err == nil {
+		envelope = Envelope{UID: uid, Opened: false,
+			Value: value, SnatchTime: snatchTime}
+		// TODO
+		// there should be a error check
+		db.Create(&envelope)
+		user.CurCount++
+		user.Amount += value
+		db.Save(&user)
+	}
+	return envelope, user, err
 }
