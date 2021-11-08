@@ -181,6 +181,7 @@ func Ping(c* gin.Context){
 }
 
 func Producer(c *gin.Context) {
+	fmt.Println("Producer start!")
 	addr,err := primitive.NewNamesrvAddr("http://MQ_INST_8149062485579066312_2586445845.cn-beijing.rocketmq-internal.ivolces.com:24009")
 	if err != nil {
 		panic(err)
@@ -256,9 +257,64 @@ func Producer(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("Producer end!")
+	c.JSON(200, gin.H{
+		"msg": "success",
+	})
 }
 
-func Consumer(c *gin.Context) {
+func PullConsumer(c *gin.Context) {
+	fmt.Println("Consumer start!")
+	topic := "Msg"
+
+	// 消费者主动拉取消息
+	// not
+	c1,err := rocketmq.NewPullConsumer(
+		consumer.WithGroupName("GID_Group"),
+		consumer.WithNsResolver(primitive.NewPassthroughResolver([]string{"http://MQ_INST_8149062485579066312_2586445845.cn-beijing.rocketmq-internal.ivolces.com:24009"})))
+	if err != nil {
+		panic(err)
+	}
+	err = c1.Start()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
+	}
+	queue := primitive.MessageQueue{
+		Topic:      topic,
+		BrokerName: "broker-a", // 使用broker的名称
+		QueueId:    0,
+	}
+
+	err = c1.Shutdown()
+	if err != nil {
+		fmt.Println("Shutdown Pull Consumer error: ",err)
+	}
+
+	offset := int64(0)
+	for  {
+		resp,err := c1.PullFrom(context.Background(),queue,offset,10)
+		if err != nil {
+			if err == rocketmq.ErrRequestTimeout {
+				fmt.Printf("timeout\n")
+				time.Sleep(time.Second)
+				continue
+			}
+			fmt.Printf("unexpected error: %v\n",err)
+			return
+		}
+		if resp.Status == primitive.PullFound {
+			fmt.Printf("pull message success. nextOffset: %d\n",resp.NextBeginOffset)
+			for _, ext := range resp.GetMessageExts() {
+				fmt.Printf("pull msg: %s\n",ext)
+			}
+		}
+		offset = resp.NextBeginOffset
+	}
+}
+
+func PushConsumer(c *gin.Context) {
+	fmt.Println("Consumer start")
 	topic := "Msg"
 
 	// 消息主动推送给消费者
@@ -308,7 +364,8 @@ func main() {
 	r.POST("/open", OpenHandler)
 	r.POST("/get_wallet_list", WalletListHandler)
 	r.GET("/produce", Producer)
-	r.GET("/consume", Consumer)
+	r.GET("/pull_consume", PullConsumer)
+	r.GET("/push_consume", PushConsumer)
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
 
