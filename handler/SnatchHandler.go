@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"go-web/utils"
+	"go-web/DBHelper"
 	"strconv"
 )
 
@@ -21,7 +21,7 @@ func SnatchHandler(c *gin.Context) {
 	curCount, _ := strconv.Atoi(users["cur_count"])
 	// search in mysql
 	if len(users) == 0 {
-		newEnvelope, user, err := utils.CreateEnvelope(uid)
+		newEnvelope, user, err := DBHelper.CreateEnvelope(uid)
 		if err == nil {
 			writeUserToRedis(user)
 			users, err = rdb.HGetAll("User:" + userId).Result()
@@ -56,7 +56,7 @@ func SnatchHandler(c *gin.Context) {
 		}
 		// TODO
 		// value should be random
-		newEnvelope, _, err := utils.CreateEnvelope(uid)
+		newEnvelope, _, err := DBHelper.CreateEnvelope(uid)
 		writeEnvelopeToRedis(newEnvelope)
 		writeEnvelopesSet(newEnvelope, userId)
 		c.JSON(200, gin.H{

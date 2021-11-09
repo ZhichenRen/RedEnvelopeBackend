@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"go-web/utils"
+	"go-web/DBHelper"
 	"strconv"
 )
 
@@ -29,7 +29,7 @@ func OpenHandler(c *gin.Context) {
 				"message": "had been opened",
 			})
 		} else if opened == "0" && userId == realUId {
-			_, user, _ := utils.OpenEnvelope(uid, eid)
+			_, user, _ := DBHelper.OpenEnvelope(uid, eid)
 			err = rdb.HSet("Envelope:"+envelopeId, "opened", true).Err()
 			writeUserToRedis(user)
 			c.JSON(200, gin.H{
@@ -47,7 +47,7 @@ func OpenHandler(c *gin.Context) {
 		}
 
 	} else {
-		envelope, user, err := utils.OpenEnvelope(uid, eid)
+		envelope, user, err := DBHelper.OpenEnvelope(uid, eid)
 		if err == nil {
 			writeUserToRedis(user)
 			writeEnvelopeToRedis(envelope)
