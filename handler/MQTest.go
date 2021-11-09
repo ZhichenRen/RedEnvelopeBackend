@@ -33,7 +33,7 @@ func Producer(c *gin.Context) {
 		fmt.Printf("start producer error: %s", err.Error())
 		os.Exit(1)
 	}
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < 10; i++ {
 		res, err := p.SendSync(context.Background(), primitive.NewMessage("Msg",
 			[]byte("Hello RocketMQ Go Client!")))
 		if err != nil {
