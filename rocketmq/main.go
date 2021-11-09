@@ -35,7 +35,7 @@ func main() {
 
 	err = client.Subscribe("Msg", consumer.MessageSelector{}, func(ctx context.Context,
 		msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
-		//fmt.Printf("subscribe callback: %v \n", msgs)
+		fmt.Printf("subscribe callback: %v \n", msgs)
 		for i := 0; i < len(msgs); i++ {
 			switch string(msgs[i].Body) {
 			case "create_envelope":
@@ -54,7 +54,12 @@ func main() {
 					db.Create(envelope)
 					user.CurCount++
 					db.Save(&user)
+					fmt.Println(envelope)
+				} else {
+					fmt.Println("An error happened when writing database.")
 				}
+			default:
+				fmt.Println("Unknown message body.")
 			}
 		}
 		return consumer.ConsumeSuccess, nil
