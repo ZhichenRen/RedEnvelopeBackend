@@ -6,12 +6,19 @@ import (
 	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"go-web/utils"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"os"
+	"strconv"
 	"time"
 )
 
 func main() {
 	fmt.Println("Consumer start!")
+	dsn := "group9:Group9@haha@tcp(rdsmysqlh1a4d645c087a17d2.rds.ivolces.com:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
+	// connect to mysql
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	client, err := rocketmq.NewPushConsumer(
 		consumer.WithGroupName("GID_Group"),
 		consumer.WithNsResolver(primitive.NewPassthroughResolver([]string{"http://100.64.247.138:24009"})),
@@ -28,7 +35,28 @@ func main() {
 
 	err = client.Subscribe("Msg", consumer.MessageSelector{}, func(ctx context.Context,
 		msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
-		fmt.Printf("subscribe callback: %v \n", msgs)
+		//fmt.Printf("subscribe callback: %v \n", msgs)
+		for i := 0; i < len(msgs); i++ {
+			switch string(msgs[i].Body) {
+			case "create_envelope":
+				params := msgs[i].GetProperties()
+				var envelope utils.Envelope
+				var user utils.User
+				uid, err := strconv.Atoi(params["UID"])
+				snatchTime, err := strconv.Atoi(params["SnatchTime"])
+				value, err := strconv.Atoi(params["Value"])
+				err = db.Where("cur_count < ?", 50).First(&user, utils.User{ID: int64(uid)}).Error
+				if err == nil {
+					envelope.UID = int64(uid)
+					envelope.SnatchTime = int64(snatchTime)
+					envelope.Value = value
+					envelope.Opened = false
+					db.Create(envelope)
+					user.CurCount++
+					db.Save(&user)
+				}
+			}
+		}
 		return consumer.ConsumeSuccess, nil
 	})
 	if err != nil {
