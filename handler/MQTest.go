@@ -9,6 +9,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/gin-gonic/gin"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -35,7 +36,7 @@ func Producer(c *gin.Context) {
 	}
 	for i := 0; i < 10; i++ {
 		res, err := p.SendSync(context.Background(), primitive.NewMessage("Msg",
-			[]byte("Hello RocketMQ Go Client!")))
+			[]byte("Hello RocketMQ Go Client! Message: " + strconv.Itoa(i))))
 		if err != nil {
 			fmt.Printf("send message error: %s\n", err)
 		} else {
