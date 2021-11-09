@@ -4,25 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6cc7eb24-825d-4ccf-a05d-5c383a34fb15" name="Changes" comment="merge">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/go_build_go_web.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/redis.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/devops-deploym.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handler/SnatchHandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/handler/SnatchHandler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hello" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/hello.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/GormDemo.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/redis/redisHelper.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/EnvelopeCrud.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/UserCrud.go" beforeDir="false" />
-    </list>
+    <list default="true" id="6cc7eb24-825d-4ccf-a05d-5c383a34fb15" name="Changes" comment="modify" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -193,7 +175,8 @@
     <MESSAGE value="snatchhandler" />
     <MESSAGE value="基本完工" />
     <MESSAGE value="merge" />
-    <option name="LAST_COMMIT_MESSAGE" value="merge" />
+    <MESSAGE value="modify" />
+    <option name="LAST_COMMIT_MESSAGE" value="modify" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
