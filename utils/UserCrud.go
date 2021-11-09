@@ -1,4 +1,4 @@
-package utils
+package main
 
 import (
 	"gorm.io/driver/mysql"
@@ -6,21 +6,20 @@ import (
 )
 
 type User struct {
-	ID       int64
-	CurCount int `json:"cur_count"`
-	Amount   int `json:"amount"`
+	ID       string `gorm:"size:10"`
+	CurCount int    `json:"curCount"`
+	Amount   int    `json:"amount"`
 }
 
 // find user by user id
-
-func GetUser(uid int64) (user User, err error) {
+func getUser(uid string) (user User) {
 	dsn := "group9:Group9@haha@tcp(124.238.238.165:3306)/red_envelope?charset=utf8&parseTime=True&loc=Local&timeout=10s"
 	// connect to mysql
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
-	}
-	err = db.First(&user, User{ID: uid}).Error
+	} // Migrate the schema
+	db.FirstOrCreate(&user, User{ID: uid})
 	return
 }
 
