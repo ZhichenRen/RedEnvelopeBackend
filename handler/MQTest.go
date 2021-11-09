@@ -17,6 +17,7 @@ func Producer(c *gin.Context) {
 	p, err := rocketmq.NewProducer(
 		producer.WithNsResolver(primitive.NewPassthroughResolver([]string{"http://100.64.247.138:24009"})),
 		producer.WithRetry(2),
+		producer.WithNamespace("MQ_INST_8149062485579066312_2586445845"),
 		producer.WithCredentials(primitive.Credentials{
 			AccessKey: "s7lec7baJkQeOBWS6Mb26vmV",
 			SecretKey: "TiJYTqrIC7iLBK4UbpkgGJqM",
@@ -52,6 +53,7 @@ func Consumer(c *gin.Context) {
 	client, err := rocketmq.NewPushConsumer(
 		consumer.WithGroupName("GID_Group"),
 		consumer.WithNsResolver(primitive.NewPassthroughResolver([]string{"http://100.64.247.138:24009"})),
+		consumer.WithNamespace("MQ_INST_8149062485579066312_2586445845"),
 		consumer.WithCredentials(primitive.Credentials{
 			AccessKey: "s7lec7baJkQeOBWS6Mb26vmV",
 			SecretKey: "TiJYTqrIC7iLBK4UbpkgGJqM",
