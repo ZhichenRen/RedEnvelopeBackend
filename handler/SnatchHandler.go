@@ -41,7 +41,7 @@ func SnatchHandler(c *gin.Context) {
 		} else {
 			c.JSON(200, gin.H{
 				"code": 1,
-				"msg":  "failed",
+				"msg":  "User not existed",
 			})
 		}
 	} else if curCount < maxCount {
