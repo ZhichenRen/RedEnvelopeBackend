@@ -10,11 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
 func Producer(c *gin.Context) {
 	fmt.Println("Producer start!")
+	topic := "Msg"
 	p, err := rocketmq.NewProducer(
 		producer.WithNsResolver(primitive.NewPassthroughResolver([]string{"http://100.64.247.138:24009"})),
 		producer.WithRetry(2),
@@ -34,19 +36,46 @@ func Producer(c *gin.Context) {
 		fmt.Printf("start producer error: %s", err.Error())
 		os.Exit(1)
 	}
-	for i := 0; i < 10; i++ {
-		res, err := p.SendSync(context.Background(), primitive.NewMessage("Msg",
-			[]byte("Hello RocketMQ Go Client! Message: " + strconv.Itoa(i))))
+	var wg sync.WaitGroup
+	// try to create 10 envelopes for a user
+	for i := 0; i < 100; i++ {
+		var params map[string]string
+		params["UID"] = "1234"
+		params["Value"] = "100"
+		params["SnatchTime"] = strconv.Itoa(int(time.Now().Unix()))
+		message := primitive.NewMessage(topic, []byte("create_envelope"))
+		message.WithProperties(params)
+		wg.Add(1)
+		err := p.SendAsync(context.Background(),
+			func(ctx context.Context, result *primitive.SendResult, e error) {
+				if e != nil {
+					fmt.Printf("receive message error: %s\n", err)
+				} else {
+					fmt.Printf("send message success: result=%s\n", result.String())
+				}
+				wg.Done()
+			}, message)
+
 		if err != nil {
 			fmt.Printf("send message error: %s\n", err)
-		} else {
-			fmt.Printf("send message success: result=%s\n", res.String())
+			c.JSON(400, gin.H{
+				"msg": "An error happened when sending messages.",
+			})
+			return
 		}
 	}
+	wg.Wait()
 	err = p.Shutdown()
 	if err != nil {
 		fmt.Printf("shutdown producer error: %s", err.Error())
+		c.JSON(400, gin.H{
+			"msg": "An error happened when shutting down producer.",
+		})
+		return
 	}
+	c.JSON(200, gin.H{
+		"msg": "success",
+	})
 }
 
 func Consumer(c *gin.Context) {
