@@ -88,6 +88,7 @@ func createEnvelope(userId string) (envelope DBHelper.Envelope) {
 		Value:      money,
 		SnatchTime: snatchTime,
 	}
+	number++
 	writeEnvelopeToRedis(envelope)
 	return
 }
