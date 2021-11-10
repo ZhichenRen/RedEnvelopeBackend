@@ -40,17 +40,13 @@ func main() {
 			switch string(msgs[i].Body) {
 			case "create_envelope":
 				params := msgs[i].GetProperties()
-				var envelope utils.Envelope
 				var user utils.User
 				uid, err := strconv.Atoi(params["UID"])
 				snatchTime, err := strconv.Atoi(params["SnatchTime"])
 				value, err := strconv.Atoi(params["Value"])
 				err = db.Where("cur_count < ?", 50).First(&user, utils.User{ID: int64(uid)}).Error
 				if err == nil {
-					envelope.UID = int64(uid)
-					envelope.SnatchTime = int64(snatchTime)
-					envelope.Value = value
-					envelope.Opened = false
+					envelope := utils.Envelope{UID: int64(uid), Opened: false, SnatchTime: int64(snatchTime), Value: value}
 					db.Create(envelope)
 					user.CurCount++
 					db.Save(&user)

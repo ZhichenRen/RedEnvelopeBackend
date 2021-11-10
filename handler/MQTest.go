@@ -39,7 +39,7 @@ func Producer(c *gin.Context) {
 	var wg sync.WaitGroup
 	// try to create 10 envelopes for a user
 	for i := 0; i < 100; i++ {
-		var params map[string]string
+		params := make(map[string]string)
 		params["UID"] = "1234"
 		params["Value"] = "100"
 		params["SnatchTime"] = strconv.Itoa(int(time.Now().Unix()))
