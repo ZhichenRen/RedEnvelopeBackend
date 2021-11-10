@@ -47,7 +47,7 @@ func main() {
 				err = db.Where("cur_count < ?", 50).First(&user, utils.User{ID: int64(uid)}).Error
 				if err == nil {
 					envelope := utils.Envelope{UID: int64(uid), Opened: false, SnatchTime: int64(snatchTime), Value: value}
-					db.Create(envelope)
+					db.Create(&envelope)
 					user.CurCount++
 					db.Save(&user)
 					fmt.Println(envelope)
