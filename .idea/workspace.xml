@@ -4,12 +4,12 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6cc7eb24-825d-4ccf-a05d-5c383a34fb15" name="Changes" comment="modify">
-      <change beforePath="$PROJECT_DIR$/DBHelper/ConnectionHelper.go" beforeDir="false" afterPath="$PROJECT_DIR$/DBHelper/ConnectionInit.go" afterDir="false" />
+    <list default="true" id="6cc7eb24-825d-4ccf-a05d-5c383a34fb15" name="Changes" comment="OpenHandler without modify database">
       <change beforePath="$PROJECT_DIR$/DBHelper/EnvelopeCrud.go" beforeDir="false" afterPath="$PROJECT_DIR$/DBHelper/EnvelopeCrud.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DBHelper/UserCrud.go" beforeDir="false" afterPath="$PROJECT_DIR$/DBHelper/UserCrud.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handler/ConnectHandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/handler/ConnectHandler.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/handler/HandlerHelper.go" beforeDir="false" afterPath="$PROJECT_DIR$/handler/HandlerHelper.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/handler/OpenHandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/handler/OpenHandler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handler/SnatchHandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/handler/SnatchHandler.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -182,7 +182,8 @@
     <MESSAGE value="基本完工" />
     <MESSAGE value="merge" />
     <MESSAGE value="modify" />
-    <option name="LAST_COMMIT_MESSAGE" value="modify" />
+    <MESSAGE value="OpenHandler without modify database" />
+    <option name="LAST_COMMIT_MESSAGE" value="OpenHandler without modify database" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>

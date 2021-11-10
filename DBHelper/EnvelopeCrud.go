@@ -1,9 +1,8 @@
 package DBHelper
 
 import (
-	"go-web/allocate"
+	"fmt"
 	"sort"
-	"time"
 )
 
 type Envelope struct {
@@ -38,22 +37,28 @@ func GetEnvelopeByEID(eid int64) (envelope Envelope) {
 	return envelope
 }
 
-func CreateEnvelope(uid int64) (envelope Envelope, user User, err error) {
-	snatchTime := time.Now().Unix()
-	value := allocate.MoneyAllocate()
+func CreateCheck(uid int64) (errorCode int) {
 	// TODO
 	// maxCount
-	err = _db.Where("cur_count < ?", 50).First(&user, User{ID: uid}).Error
-	if err == nil {
-		envelope = Envelope{UID: uid, Opened: false,
-			Value: value, SnatchTime: snatchTime}
-		// TODO
-		// there should be a error check
-		_db.Create(&envelope)
-		user.CurCount++
-		_db.Save(&user)
+	fmt.Println(uid)
+	var user User
+	err := _db.Where("id = ?", uid).First(&user).Error
+	fmt.Println(err)
+	if err != nil {
+		errorCode = 2
+	} else if user.CurCount > 10 {
+		errorCode = 1
+	} else {
+		errorCode = 0
 	}
-	return envelope, user, err
+	return
+}
+
+func CreateEnvelope(envelope Envelope) {
+	user, _ := GetUser(envelope.UID)
+	user.CurCount++
+	_db.Model(&user).Update("cur_count", user.CurCount)
+	_db.Create(&envelope)
 }
 
 func OpenEnvelope(uid int64, eid int64) {
@@ -66,16 +71,16 @@ func OpenEnvelope(uid int64, eid int64) {
 	return
 }
 
-func OpenCheck(uid int64, eid int64) (envelope Envelope, error int) {
+func OpenCheck(uid int64, eid int64) (envelope Envelope, errorCode int) {
 	err := _db.First(&envelope, Envelope{ID: eid, UID: uid}).Error
 	if err != nil {
-		error = 1
+		errorCode = 1
 		return
 	} else if envelope.Opened {
-		error = 2
+		errorCode = 2
 		return
 	} else {
-		error = 0
+		errorCode = 0
 		return
 	}
 }

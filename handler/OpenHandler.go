@@ -34,7 +34,7 @@ func OpenHandler(c *gin.Context) {
 			// TODO
 			// write to MySQL
 			// OpenEnvelope should be deleted
-			//DBHelper.OpenEnvelope(uid, eid)
+			DBHelper.OpenEnvelope(uid, eid)
 			c.JSON(200, gin.H{
 				"code":    0,
 				"message": "success",
@@ -57,6 +57,7 @@ func OpenHandler(c *gin.Context) {
 			// write to MySQL
 			// OpenEnvelope should be deleted
 			// DBHelper.OpenEnvelope(uid, eid)
+			DBHelper.OpenEnvelope(uid, eid)
 			c.JSON(200, gin.H{
 				"code":    0,
 				"message": "success",

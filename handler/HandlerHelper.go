@@ -2,7 +2,9 @@ package handler
 
 import (
 	"go-web/DBHelper"
+	"go-web/allocate"
 	"strconv"
+	"time"
 )
 
 func writeUserToRedis(user DBHelper.User) {
@@ -40,9 +42,9 @@ func updateAmount(UserId string, value string) {
 	}
 }
 
-func updateAmountInt(UserId string, value int) {
-	users, _ := rdb.HGetAll("User:" + UserId).Result()
-	uid, _ := strconv.ParseInt(UserId, 10, 64)
+func updateAmountInt(userId string, value int) {
+	users, _ := rdb.HGetAll("User:" + userId).Result()
+	uid, _ := strconv.ParseInt(userId, 10, 64)
 	if len(users) == 0 {
 		user, _ := DBHelper.GetUser(uid)
 		user.Amount += value
@@ -61,4 +63,31 @@ func updateOpened(eid int64) {
 	envelopeInfo["uid"] = envelope.UID
 	envelopeInfo["snatch_time"] = envelope.SnatchTime
 	rdb.HMSet("Envelope:"+strconv.FormatInt(envelope.ID, 10), envelopeInfo)
+}
+
+func updateCurCount(userId string) (curCount int64) {
+	users, _ := rdb.HGetAll("User:" + userId).Result()
+	uid, _ := strconv.ParseInt(userId, 10, 64)
+	if len(users) == 0 {
+		user, _ := DBHelper.GetUser(uid)
+		user.CurCount++
+		writeUserToRedis(user)
+	} else {
+		curCount, _ = rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
+	}
+	return
+}
+
+func createEnvelope(userId string) (envelope DBHelper.Envelope) {
+	money := allocate.MoneyAllocate()
+	snatchTime := time.Now().Unix()
+	uid, _ := strconv.ParseInt(userId, 10, 64)
+	envelope = DBHelper.Envelope{
+		ID:         number,
+		UID:        uid,
+		Value:      money,
+		SnatchTime: snatchTime,
+	}
+	writeEnvelopeToRedis(envelope)
+	return
 }

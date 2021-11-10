@@ -5,6 +5,7 @@ import (
 )
 
 var rdb *redis.Client
+var number int64
 
 func InitClient() (err error) {
 	rdb = redis.NewClient(&redis.Options{
@@ -13,6 +14,7 @@ func InitClient() (err error) {
 		DB:       0,  // use default DB
 	})
 
+	number = 0
 	_, err = rdb.Ping().Result()
 	return err
 }
