@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"go-web/utils"
+	"go-web/dao"
 	"strconv"
 )
 
@@ -21,27 +21,29 @@ func SnatchHandler(c *gin.Context) {
 	curCount, _ := strconv.Atoi(users["cur_count"])
 	// search in mysql
 	if len(users) == 0 {
-		newEnvelope, user, err := utils.CreateEnvelope(uid)
-		if err == nil {
-			writeUserToRedis(user)
-			users, err = rdb.HGetAll("User:" + userId).Result()
-			if err != nil {
-				fmt.Println(err)
-			}
+		err := dao.CreateCheck(uid)
+		if err == 0 {
+			newEnvelope := createEnvelope(userId)
+			updateCount := updateCurCount(userId)
 			writeEnvelopesSet(newEnvelope, userId)
+			// TODO
+			// write to sql
+			// CreateEnvelope should be deleted
+			dao.CreateEnvelope(newEnvelope)
+
 			c.JSON(200, gin.H{
 				"code": 0,
 				"msg":  "success",
 				"data": gin.H{
 					"envelope_id": newEnvelope.ID,
 					"max_count":   maxCount,
-					"cur_count":   user.CurCount,
+					"cur_count":   updateCount,
 				},
 			})
 		} else {
 			c.JSON(200, gin.H{
-				"code": 1,
-				"msg":  "User not existed",
+				"code": err,
+				"msg":  "failed",
 			})
 		}
 	} else if curCount < maxCount {
@@ -54,11 +56,13 @@ func SnatchHandler(c *gin.Context) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		// TODO
-		// value should be random
-		newEnvelope, _, err := utils.CreateEnvelope(uid)
-		writeEnvelopeToRedis(newEnvelope)
+		newEnvelope := createEnvelope(userId)
 		writeEnvelopesSet(newEnvelope, userId)
+		// TODO
+		// write to sql
+		// CreateEnvelope should be deleted
+		dao.CreateEnvelope(newEnvelope)
+
 		c.JSON(200, gin.H{
 			"code": 0,
 			"msg":  "success",
@@ -70,8 +74,8 @@ func SnatchHandler(c *gin.Context) {
 		})
 	} else {
 		c.JSON(200, gin.H{
-			"code": 0,
-			"msg":  "fail",
+			"code": 1,
+			"msg":  "exceed",
 		})
 	}
 }

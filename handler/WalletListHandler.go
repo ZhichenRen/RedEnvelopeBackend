@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"go-web/utils"
+	"go-web/dao"
 	"strconv"
 )
 
@@ -19,7 +19,7 @@ func WalletListHandler(c *gin.Context) {
 	var amount int
 	var data []gin.H
 	if len(users) == 0 {
-		user, _ := utils.GetUser(uid)
+		user, _ := dao.GetUser(uid)
 		amount = user.Amount
 		curCount = user.CurCount
 		writeUserToRedis(user)
@@ -46,7 +46,7 @@ func WalletListHandler(c *gin.Context) {
 				data = append(data, tmp)
 			} else {
 				eid, _ := strconv.ParseInt(envelopeId, 10, 64)
-				envelopeFromSql := utils.GetEnvelopeByEID(eid)
+				envelopeFromSql := dao.GetEnvelopeByEID(eid)
 				tmp := gin.H{}
 				tmp["envelope_id"] = envelopeId
 				tmp["snatch_time"] = envelopeFromSql.SnatchTime
@@ -61,7 +61,7 @@ func WalletListHandler(c *gin.Context) {
 			}
 		}
 	} else {
-		envelopes, _ := utils.GetEnvelopesByUID(uid)
+		envelopes, _ := dao.GetEnvelopesByUID(uid)
 		for _, envelope := range envelopes {
 			tmp := gin.H{}
 			tmp["envelope_id"] = envelope.ID

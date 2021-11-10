@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"go-web/utils"
+	"go-web/dao"
 	"strconv"
 )
 
@@ -23,15 +23,18 @@ func OpenHandler(c *gin.Context) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		if opened != "0" {
+		if userId != realUId {
 			c.JSON(200, gin.H{
-				"code":    0,
-				"message": "had been opened",
+				"code":    1,
+				"message": "no authorization",
 			})
-		} else if opened == "0" && userId == realUId {
-			_, user, _ := utils.OpenEnvelope(uid, eid)
-			err = rdb.HSet("Envelope:"+envelopeId, "opened", true).Err()
-			writeUserToRedis(user)
+		} else if opened == "0" {
+			rdb.HSet("Envelope:"+envelopeId, "opened", true)
+			updateAmount(userId, value)
+			// TODO
+			// write to MySQL
+			// OpenEnvelope should be deleted
+			dao.OpenEnvelope(uid, eid)
 			c.JSON(200, gin.H{
 				"code":    0,
 				"message": "success",
@@ -41,16 +44,20 @@ func OpenHandler(c *gin.Context) {
 			})
 		} else {
 			c.JSON(200, gin.H{
-				"code":    0,
-				"message": "no authorization",
+				"code":    2,
+				"message": "had been opened",
 			})
 		}
-
 	} else {
-		envelope, user, err := utils.OpenEnvelope(uid, eid)
-		if err == nil {
-			writeUserToRedis(user)
-			writeEnvelopeToRedis(envelope)
+		envelope, err := dao.OpenCheck(uid, eid)
+		if err == 0 {
+			updateAmountInt(userId, envelope.Value)
+			updateOpened(eid)
+			// TODO
+			// write to MySQL
+			// OpenEnvelope should be deleted
+			// dao.OpenEnvelope(uid, eid)
+			dao.OpenEnvelope(uid, eid)
 			c.JSON(200, gin.H{
 				"code":    0,
 				"message": "success",
@@ -60,7 +67,7 @@ func OpenHandler(c *gin.Context) {
 			})
 		} else {
 			c.JSON(200, gin.H{
-				"code":    1,
+				"code":    err,
 				"message": "fail",
 			})
 		}
