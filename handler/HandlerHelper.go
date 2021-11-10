@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"go-web/allocate"
 	"go-web/dao"
 	"strconv"
@@ -81,14 +82,17 @@ func updateCurCount(userId string) (curCount int64) {
 func createEnvelope(userId string) (envelope dao.Envelope) {
 	money := allocate.MoneyAllocate()
 	snatchTime := time.Now().Unix()
-	uid, _ := strconv.ParseInt(userId, 10, 64)
+	uid, err := strconv.ParseInt(userId, 10, 64)
+	eid, err := rdb.Incr("EnvelopeId").Result()
+	if err != nil {
+		fmt.Println(err)
+	}
 	envelope = dao.Envelope{
-		ID:         number,
+		ID:         eid,
 		UID:        uid,
 		Value:      money,
 		SnatchTime: snatchTime,
 	}
-	number++
 	writeEnvelopeToRedis(envelope)
 	return
 }
