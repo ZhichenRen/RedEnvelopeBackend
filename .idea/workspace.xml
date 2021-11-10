@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6cc7eb24-825d-4ccf-a05d-5c383a34fb15" name="Changes" comment="modify" />
+    <list default="true" id="6cc7eb24-825d-4ccf-a05d-5c383a34fb15" name="Changes" comment="modify">
+      <change beforePath="$PROJECT_DIR$/DBHelper/ConnectionHelper.go" beforeDir="false" afterPath="$PROJECT_DIR$/DBHelper/ConnectionInit.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DBHelper/EnvelopeCrud.go" beforeDir="false" afterPath="$PROJECT_DIR$/DBHelper/EnvelopeCrud.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DBHelper/UserCrud.go" beforeDir="false" afterPath="$PROJECT_DIR$/DBHelper/UserCrud.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handler/HandlerHelper.go" beforeDir="false" afterPath="$PROJECT_DIR$/handler/HandlerHelper.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handler/OpenHandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/handler/OpenHandler.go" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -143,8 +149,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Build.go build hello.go" />
         <item itemvalue="Go Build.go build go-web (1)" />
+        <item itemvalue="Go Build.go build hello.go" />
         <item itemvalue="Go Build.go build go-web/utils" />
         <item itemvalue="Go Build.go build go-web/allocate" />
         <item itemvalue="Go Build.go build go-web" />
