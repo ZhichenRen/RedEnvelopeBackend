@@ -46,7 +46,7 @@ func WalletListHandler(c *gin.Context) {
 				data = append(data, tmp)
 			} else {
 				eid, _ := strconv.ParseInt(envelopeId, 10, 64)
-				envelopeFromSql := dao.GetEnvelopeByEID(eid)
+				envelopeFromSql, _ := dao.GetEnvelopeByEID(eid)
 				tmp := gin.H{}
 				tmp["envelope_id"] = envelopeId
 				tmp["snatch_time"] = envelopeFromSql.SnatchTime

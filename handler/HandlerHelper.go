@@ -56,7 +56,7 @@ func updateAmountInt(userId string, value int) {
 }
 
 func updateOpened(eid int64) {
-	envelope := dao.GetEnvelopeByEID(eid)
+	envelope, _ := dao.GetEnvelopeByEID(eid)
 	envelopeInfo := make(map[string]interface{})
 	envelopeInfo["value"] = envelope.Value
 	envelopeInfo["opened"] = true

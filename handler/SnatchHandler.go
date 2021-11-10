@@ -1,53 +1,69 @@
 package handler
 
 import (
+	"context"
 	"fmt"
+	"github.com/apache/rocketmq-client-go/v2"
+	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/gin-gonic/gin"
 	"go-web/dao"
 	"strconv"
+	"sync"
+	"time"
 )
 
 func SnatchHandler(c *gin.Context) {
 	userId, _ := c.GetPostForm("uid")
 	// string -> int64
 	uid, err := strconv.ParseInt(userId, 10, 64)
-	users, err := rdb.HGetAll("User:" + userId).Result()
+	user, err := rdb.HGetAll("User:" + userId).Result()
 	if err != nil {
 		fmt.Println(err)
 	}
 	// TODO how to get maxCount
 	// maxCount, err := rdb.Get("MaxCount").Result()
-	maxCount := 10
-	curCount, _ := strconv.Atoi(users["cur_count"])
 	// search in mysql
-	if len(users) == 0 {
-		err := dao.CreateCheck(uid)
-		if err == 0 {
-			newEnvelope := createEnvelope(userId)
-			updateCount := updateCurCount(userId)
-			writeEnvelopesSet(newEnvelope, userId)
-			// TODO
-			// write to sql
-			// CreateEnvelope should be deleted
-			dao.CreateEnvelope(newEnvelope)
-
-			c.JSON(200, gin.H{
-				"code": 0,
-				"msg":  "success",
-				"data": gin.H{
-					"envelope_id": newEnvelope.ID,
-					"max_count":   maxCount,
-					"cur_count":   updateCount,
-				},
+	if len(user) == 0 {
+		users, err := dao.GetUser(uid)
+		writeUserToRedis(users)
+		user, err = rdb.HGetAll("User:" + userId).Result()
+		if err != nil {
+			c.JSON(500, gin.H{
+				"code": 1,
+				"msg": "A database error occurred.",
 			})
-		} else {
-			c.JSON(200, gin.H{
-				"code": err,
-				"msg":  "failed",
-			})
+			return
 		}
-	} else if curCount < maxCount {
-		//fmt.Println("User:", users)
+		//err := dao.CreateCheck(uid)
+		//if err == 0 {
+		//	newEnvelope := createEnvelope(userId)
+		//	updateCount := updateCurCount(userId)
+		//	writeEnvelopesSet(newEnvelope, userId)
+		//	// TODO
+		//	// write to sql
+		//	// CreateEnvelope should be deleted
+		//	dao.CreateEnvelope(newEnvelope)
+		//
+		//	c.JSON(200, gin.H{
+		//		"code": 0,
+		//		"msg":  "success",
+		//		"data": gin.H{
+		//			"envelope_id": newEnvelope.ID,
+		//			"max_count":   maxCount,
+		//			"cur_count":   updateCount,
+		//		},
+		//	})
+		//} else {
+		//	c.JSON(200, gin.H{
+		//		"code": err,
+		//		"msg":  "failed",
+		//	})
+		//}
+	}
+	maxCount := 10
+	curCount, _ := strconv.Atoi(user["cur_count"])
+	if curCount < maxCount {
 		// TODO
 		// OUR CODE HERE
 		// 随机数判断用户是否抢到红包，后期需要替换
@@ -58,11 +74,70 @@ func SnatchHandler(c *gin.Context) {
 		}
 		newEnvelope := createEnvelope(userId)
 		writeEnvelopesSet(newEnvelope, userId)
-		// TODO
-		// write to sql
-		// CreateEnvelope should be deleted
-		dao.CreateEnvelope(newEnvelope)
 
+		// message queue
+		p, err := rocketmq.NewProducer(
+			producer.WithNsResolver(primitive.NewPassthroughResolver([]string{"http://100.64.247.138:24009"})),
+			producer.WithRetry(2),
+			producer.WithNamespace("MQ_INST_8149062485579066312_2586445845"),
+			producer.WithCredentials(primitive.Credentials{
+				AccessKey: "s7lec7baJkQeOBWS6Mb26vmV",
+				SecretKey: "TiJYTqrIC7iLBK4UbpkgGJqM",
+			}),
+			producer.WithGroupName("GID_Group"),
+		)
+		if err != nil {
+			fmt.Println("init producer error: " + err.Error())
+			c.JSON(500, gin.H{
+				"code": 1,
+				"msg": "An error occurred when creating producer.",
+			})
+			return
+		}
+		err = p.Start()
+		if err != nil {
+			fmt.Printf("start producer error: %s", err.Error())
+			c.JSON(500, gin.H{
+				"code": 1,
+				"msg": "An error occurred when starting producer.",
+			})
+			return
+		}
+		var wg sync.WaitGroup
+		topic := "Msg"
+		params := make(map[string]string)
+		params["UID"] = strconv.FormatInt(newEnvelope.UID, 10)
+		params["EID"] = strconv.FormatInt(newEnvelope.ID, 10)
+		params["Value"] = string(rune(newEnvelope.Value))
+		params["SnatchTime"] = strconv.Itoa(int(time.Now().Unix()))
+		message := primitive.NewMessage(topic, []byte("create_envelope"))
+		message.WithProperties(params)
+		wg.Add(1)
+		err = p.SendAsync(context.Background(),
+			func(ctx context.Context, result *primitive.SendResult, e error) {
+				if e != nil {
+					fmt.Printf("receive message error: %s\n", err)
+				} else {
+					fmt.Printf("send message success: result=%s\n", result.String())
+				}
+				wg.Done()
+			}, message)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"code": 1,
+				"msg": "An error occurred when sending message.",
+			})
+			return
+		}
+		wg.Wait()
+		err = p.Shutdown()
+		if err != nil {
+			c.JSON(500, gin.H{
+				"code": 1,
+				"msg": "An error occurred when closing producer.",
+			})
+			return
+		}
 		c.JSON(200, gin.H{
 			"code": 0,
 			"msg":  "success",
@@ -74,8 +149,8 @@ func SnatchHandler(c *gin.Context) {
 		})
 	} else {
 		c.JSON(200, gin.H{
-			"code": 1,
-			"msg":  "exceed",
+			"code": 2,
+			"msg":  "很抱歉，您没有抢到红包，这可能是因为手气不佳或已达上限",
 		})
 	}
 }

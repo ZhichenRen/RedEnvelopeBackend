@@ -32,9 +32,10 @@ func GetEnvelopesByUID(uid int64) ([]*Envelope, error) {
 	return envelopes, nil
 }
 
-func GetEnvelopeByEID(eid int64) (envelope Envelope) {
-	_db.Where("id = ?", eid).First(&envelope)
-	return envelope
+func GetEnvelopeByEID(eid int64) (Envelope, error) {
+	var envelope Envelope
+	err := _db.Where("id = ?", eid).First(&envelope).Error
+	return envelope, err
 }
 
 func CreateCheck(uid int64) (errorCode int) {
@@ -63,7 +64,7 @@ func CreateEnvelope(envelope Envelope) {
 
 func OpenEnvelope(uid int64, eid int64) {
 	user, _ := GetUser(uid)
-	envelope := GetEnvelopeByEID(eid)
+	envelope, _ := GetEnvelopeByEID(eid)
 	envelope.Opened = true
 	user.Amount += envelope.Value
 	_db.Model(&user).Update("amount", user.Amount)
