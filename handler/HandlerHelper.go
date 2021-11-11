@@ -39,7 +39,8 @@ func updateAmount(UserId string, value string) {
 		writeUserToRedis(user)
 	} else {
 		curAmount, _ := strconv.Atoi(users["amount"])
-		users["amount"] = strconv.Itoa(curAmount + valueInt)
+		//users["amount"] = strconv.Itoa(curAmount + valueInt)
+		rdb.HSet("User:" + UserId, "Amount", curAmount + valueInt)
 	}
 }
 
