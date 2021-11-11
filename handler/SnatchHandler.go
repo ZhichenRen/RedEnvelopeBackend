@@ -83,7 +83,7 @@ func SnatchHandler(c *gin.Context) {
 		params := make(map[string]string)
 		params["UID"] = strconv.FormatInt(newEnvelope.UID, 10)
 		params["EID"] = strconv.FormatInt(newEnvelope.ID, 10)
-		params["Value"] = string(rune(newEnvelope.Value))
+		params["Value"] = strconv.Itoa(newEnvelope.Value)
 		params["SnatchTime"] = strconv.Itoa(int(time.Now().Unix()))
 		message := primitive.NewMessage(topic, []byte("create_envelope"))
 		message.WithProperties(params)
