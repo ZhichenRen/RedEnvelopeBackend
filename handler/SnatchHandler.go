@@ -40,7 +40,7 @@ func SnatchHandler(c *gin.Context) {
 	// cheat detection
 	snatchCount, err := rdb.Get("User:" + userId + ":Snatch").Int64()
 	if snatchCount == 0 {
-		err = rdb.Set("User:" + userId + ":Snatch", 1, 60).Err()
+		err = rdb.Set("User:" + userId + ":Snatch", 1, 60000000000).Err()
 	} else {
 		snatchCount, err = rdb.Incr("User:" + userId + ":Snatch").Result()
 		if snatchCount > 60 {
