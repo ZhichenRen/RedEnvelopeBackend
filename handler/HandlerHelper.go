@@ -80,7 +80,9 @@ func updateCurCount(userId string) (curCount int64) {
 }
 
 func createEnvelope(userId string) (envelope dao.Envelope) {
-	money := allocate.MoneyAllocate()
+	moneyLeft, err := rdb.Get("TotalMoney").Int()
+	envelopeLeft, err := rdb.Get("EnvelopeNum").Int()
+	money := allocate.MoneyAllocate(int64(moneyLeft), int64(envelopeLeft))
 	snatchTime := time.Now().Unix()
 	uid, err := strconv.ParseInt(userId, 10, 64)
 	eid, err := rdb.Incr("EnvelopeId").Result()
@@ -93,6 +95,8 @@ func createEnvelope(userId string) (envelope dao.Envelope) {
 		Value:      money,
 		SnatchTime: snatchTime,
 	}
+	err = rdb.IncrBy("TotalMoney", int64(-money)).Err()
+	err = rdb.IncrBy("EnvelopeNum", -1).Err()
 	writeEnvelopeToRedis(envelope)
 	return
 }

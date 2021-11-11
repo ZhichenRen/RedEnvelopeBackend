@@ -32,7 +32,7 @@ func Init() {
 	rand.Seed(time.Now().Unix())
 }
 
-func MoneyAllocate() (value int) {
+func MoneyAllocate(moneyLeft, envelopeLeft int64) (value int) {
 	mu := float64(moneyLeft) / float64(envelopeLeft)
 	minAllocate = (1 - deviation) * mu
 	maxAllocate = (1 + deviation) * mu
