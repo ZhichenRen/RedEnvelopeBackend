@@ -35,31 +35,6 @@ func SnatchHandler(c *gin.Context) {
 			})
 			return
 		}
-		//err := dao.CreateCheck(uid)
-		//if err == 0 {
-		//	newEnvelope := createEnvelope(userId)
-		//	updateCount := updateCurCount(userId)
-		//	writeEnvelopesSet(newEnvelope, userId)
-		//	// TODO
-		//	// write to sql
-		//	// CreateEnvelope should be deleted
-		//	dao.CreateEnvelope(newEnvelope)
-		//
-		//	c.JSON(200, gin.H{
-		//		"code": 0,
-		//		"msg":  "success",
-		//		"data": gin.H{
-		//			"envelope_id": newEnvelope.ID,
-		//			"max_count":   maxCount,
-		//			"cur_count":   updateCount,
-		//		},
-		//	})
-		//} else {
-		//	c.JSON(200, gin.H{
-		//		"code": err,
-		//		"msg":  "failed",
-		//	})
-		//}
 	}
 	maxCount := 10
 	curCount, _ := strconv.Atoi(user["cur_count"])
@@ -112,6 +87,7 @@ func SnatchHandler(c *gin.Context) {
 		params["SnatchTime"] = strconv.Itoa(int(time.Now().Unix()))
 		message := primitive.NewMessage(topic, []byte("create_envelope"))
 		message.WithProperties(params)
+		fmt.Println(params)
 		wg.Add(1)
 		err = p.SendAsync(context.Background(),
 			func(ctx context.Context, result *primitive.SendResult, e error) {
