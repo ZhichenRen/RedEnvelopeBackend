@@ -36,6 +36,29 @@ func SnatchHandler(c *gin.Context) {
 			return
 		}
 	}
+
+	// cheat detection
+	snatchCount, err := rdb.Get("User:" + userId + ":Snatch").Int64()
+	if snatchCount == 0 {
+		err = rdb.Set("User:" + userId + ":Snatch", 1, 60).Err()
+	} else {
+		snatchCount, err = rdb.Incr("User:" + userId + ":Snatch").Result()
+		if snatchCount > 60 {
+			c.JSON(403, gin.H{
+				"code": 2,
+				"msg": "系统检测到你在作弊！",
+			})
+			return
+		}
+	}
+	if err != nil {
+		c.JSON(500, gin.H{
+			"code": 1,
+			"msg": "A database error occurred.",
+		})
+		return
+	}
+
 	maxCount := 10
 	curCount, _ := strconv.Atoi(user["cur_count"])
 	if curCount < maxCount {
