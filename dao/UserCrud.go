@@ -29,11 +29,11 @@ func updateCurCount(user *User) {
 
 func UpdateCurCount(uid int64) error {
 	tx := _db.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
+	//defer func() {
+	//	if r := recover(); r != nil {
+	//		tx.Rollback()
+	//	}
+	//}()
 	if err := tx.Error; err != nil {
 		return err
 	}
