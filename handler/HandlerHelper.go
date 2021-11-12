@@ -13,13 +13,13 @@ func writeUserToRedis(user dao.User) {
 	userInfo["cur_count"] = user.CurCount
 	userInfo["amount"] = user.Amount
 	err := rdb.HMSet("User:"+strconv.FormatInt(user.ID, 10), userInfo).Err()
-	fmt.Println("HandlerHelper, writeUserToRedis label 1", err)
+	logError("HandlerHelper, writeUserToRedis", 1, err)
 }
 
 func writeEnvelopesSet(envelope dao.Envelope, userId string) {
 	EID := strconv.FormatInt(envelope.ID, 10)
 	err := rdb.SAdd("User:"+userId+":Envelopes", EID).Err()
-	fmt.Println("HandlerHelper, writeEnvelopesSet label 1", err)
+	logError("HandlerHelper, writeEnvelopesSet", 1, err)
 }
 
 func writeEnvelopeToRedis(envelope dao.Envelope) {
@@ -29,27 +29,27 @@ func writeEnvelopeToRedis(envelope dao.Envelope) {
 	envelopeInfo["uid"] = envelope.UID
 	envelopeInfo["snatch_time"] = envelope.SnatchTime
 	err := rdb.HMSet("Envelope:"+strconv.FormatInt(envelope.ID, 10), envelopeInfo).Err()
-	fmt.Println("HandlerHelper, writeEnvelopeToRedis label 1", err)
+	logError("HandlerHelper, writeEnvelopeToRedis", 1, err)
 }
 
 func updateAmount(UserId string, value string) {
 	users, err := rdb.HGetAll("User:" + UserId).Result()
-	fmt.Println("HandlerHelper, updateAmount label 1", err)
+	logError("HandlerHelper, updateAmount", 1, err)
 	uid, err := strconv.ParseInt(UserId, 10, 64)
-	fmt.Println("HandlerHelper, updateAmount label 2", err)
+	logError("HandlerHelper, updateAmount", 2, err)
 	valueInt, err := strconv.Atoi(value)
-	fmt.Println("HandlerHelper, updateAmount label 3", err)
+	logError("HandlerHelper, updateAmount", 3, err)
 	if len(users) == 0 {
 		user, err := dao.GetUser(uid)
-		fmt.Println("HandlerHelper, updateAmount label 4", err)
+		logError("HandlerHelper, updateAmount", 4, err)
 		user.Amount += valueInt
 		writeUserToRedis(user)
 	} else {
 		curAmount, err := strconv.Atoi(users["amount"])
-		fmt.Println("HandlerHelper, updateAmount label 5", err)
+		logError("HandlerHelper, updateAmount", 5, err)
 		//users["amount"] = strconv.Itoa(curAmount + valueInt)
 		err = rdb.HSet("User:"+UserId, "amount", curAmount+valueInt).Err()
-		fmt.Println("HandlerHelper, updateAmount label 6", err)
+		logError("HandlerHelper, updateAmount", 6, err)
 	}
 }
 
@@ -91,15 +91,15 @@ func updateCurCount(userId string) (curCount int64) {
 
 func createEnvelope(userId string) (envelope dao.Envelope) {
 	moneyLeft, err := rdb.Get("TotalMoney").Int()
-	fmt.Println("HandlerHelper, createEnvelope label 1", err)
+	logError("HandlerHelper, createEnvelope", 1, err)
 	envelopeLeft, err := rdb.Get("EnvelopeNum").Int()
-	fmt.Println("HandlerHelper, createEnvelope label 2", err)
+	logError("HandlerHelper, createEnvelope", 2, err)
 	money := allocate.MoneyAllocate(int64(moneyLeft), int64(envelopeLeft))
 	snatchTime := time.Now().Unix()
 	uid, err := strconv.ParseInt(userId, 10, 64)
-	fmt.Println("HandlerHelper, createEnvelope label 3", err)
+	logError("HandlerHelper, createEnvelope", 3, err)
 	eid, err := rdb.Incr("EnvelopeId").Result()
-	fmt.Println("HandlerHelper, createEnvelope label 4", err)
+	logError("HandlerHelper, createEnvelope", 4, err)
 	envelope = dao.Envelope{
 		ID:         eid,
 		UID:        uid,
@@ -107,9 +107,15 @@ func createEnvelope(userId string) (envelope dao.Envelope) {
 		SnatchTime: snatchTime,
 	}
 	err = rdb.IncrBy("TotalMoney", int64(-money)).Err()
-	fmt.Println("HandlerHelper, createEnvelope label 5", err)
+	logError("HandlerHelper, createEnvelope", 5, err)
 	err = rdb.IncrBy("EnvelopeNum", -1).Err()
-	fmt.Println("HandlerHelper, createEnvelope label 6", err)
+	logError("HandlerHelper, createEnvelope", 6, err)
 	writeEnvelopeToRedis(envelope)
 	return
+}
+
+func logError(handler string, label int, err error) {
+	if err != nil {
+		fmt.Printf("%s label %d, %s", handler, label, err)
+	}
 }

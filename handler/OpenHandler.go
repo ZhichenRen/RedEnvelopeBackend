@@ -12,14 +12,20 @@ import (
 
 func OpenHandler(c *gin.Context) {
 	userId, flag := c.GetPostForm("uid")
-	fmt.Println("OpenHandler label -1, GetPostForm", flag)
+	if flag == false {
+		fmt.Println("OpenHandler label -1, GetPostForm", flag)
+	}
 	envelopeId, flag := c.GetPostForm("envelope_id")
-	fmt.Println("OpenHandler label -2, GetPostForm", flag)
+	if flag == false {
+		fmt.Println("OpenHandler label -2, GetPostForm", flag)
+	}
 	uid, err := strconv.ParseInt(userId, 10, 64)
-	fmt.Println("OpenHandler label -3, ParseInt", err)
+	if flag == false {
+		fmt.Println("OpenHandler label -3, ParseInt", err)
+	}
 	//eid, _ := strconv.ParseInt(envelopeId, 10, 64)
 	envelopes, err := rdb.HGetAll("Envelope:" + envelopeId).Result()
-	fmt.Println("OpenHandler label 1, get envelopes from redis", err)
+	logError("OpenHandler", 1, err)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"code": 1,
@@ -31,7 +37,7 @@ func OpenHandler(c *gin.Context) {
 	if len(envelopes) == 0 {
 		// key in redis expired, read from mysql
 		envelopeList, err := dao.GetEnvelopesByUID(uid)
-		fmt.Println("OpenHandler label 2, get from mysql,GetEnvelopesByUID", err)
+		logError("OpenHandler", 2, err)
 		// error or envelope not found
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -46,7 +52,7 @@ func OpenHandler(c *gin.Context) {
 			writeEnvelopesSet(*e, userId)
 		}
 		envelopes, err = rdb.HGetAll("Envelope:" + envelopeId).Result()
-		fmt.Println("OpenHandler label 3, get envelopes from redis", err)
+		logError("OpenHandler", 3, err)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"code": 1,
@@ -88,8 +94,10 @@ func OpenHandler(c *gin.Context) {
 				}
 				wg.Done()
 			}, message)
-		fmt.Printf("OpenHandler label 6, an error occurred when sending message:%s\n", err)
-		fmt.Println(message)
+		if err != nil {
+			fmt.Printf("OpenHandler label 6, an error occurred when sending message:%s\n", err)
+			fmt.Println(message)
+		}
 		if err != nil {
 			c.JSON(500, gin.H{
 				"code": 1,

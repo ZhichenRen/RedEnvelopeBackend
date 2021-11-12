@@ -9,32 +9,34 @@ import (
 
 func WalletListHandler(c *gin.Context) {
 	userId, flag := c.GetPostForm("uid")
-	fmt.Println("WalletListHandler label -1, GetPostForm", flag)
+	if flag == false {
+		fmt.Println("WalletListHandler label -1, GetPostForm", flag)
+	}
 	uid, err := strconv.ParseInt(userId, 10, 64)
-	fmt.Println("WalletListHandler label -2, ParseInt", err)
+	logError("WalletListHandler", -2, err)
 	envelopeList, err := rdb.SMembers("User:" + userId + ":Envelopes").Result()
-	fmt.Println("WalletListHandler label 1, get envelopeList from redis", err)
+	logError("WalletListHandler", 1, err)
 	users, err := rdb.HGetAll("User:" + userId).Result()
-	fmt.Println("WalletListHandler label 2, get user from redis", err)
+	logError("WalletListHandler", 2, err)
 	var curCount int
 	var amount int
 	var data []gin.H
 	if len(users) == 0 {
 		user, err := dao.GetUser(uid)
-		fmt.Println("WalletListHandler label 3, get user from mysql", err)
+		logError("WalletListHandler", 3, err)
 		amount = user.Amount
 		curCount = user.CurCount
 		writeUserToRedis(user)
 	} else {
 		curCount, err = strconv.Atoi(users["cur_count"])
-		fmt.Println("WalletListHandler label -3, Atoi", err)
+		logError("WalletListHandler", -3, err)
 		amount, err = strconv.Atoi(users["amount"])
-		fmt.Println("WalletListHandler label -4, Atoi", err)
+		logError("WalletListHandler", -4, err)
 	}
 	if len(envelopeList) == curCount {
 		for _, envelopeId := range envelopeList {
 			envelope, err := rdb.HGetAll("Envelope:" + envelopeId).Result()
-			fmt.Println("WalletListHandler label 4, get envelope from redis", err)
+			logError("WalletListHandler", 4, err)
 			if len(envelope) != 0 {
 				tmp := gin.H{}
 				tmp["envelope_id"] = envelopeId
@@ -48,9 +50,9 @@ func WalletListHandler(c *gin.Context) {
 				data = append(data, tmp)
 			} else {
 				eid, err := strconv.ParseInt(envelopeId, 10, 64)
-				fmt.Println("WalletListHandler label -5, ParseInt", err)
+				logError("WalletListHandler", -5, err)
 				envelopeFromSql, err := dao.GetEnvelopeByEID(eid)
-				fmt.Println("WalletListHandler label 5, get envelope from mysql", err)
+				logError("WalletListHandler", 5, err)
 				tmp := gin.H{}
 				tmp["envelope_id"] = envelopeId
 				tmp["snatch_time"] = envelopeFromSql.SnatchTime
@@ -66,7 +68,7 @@ func WalletListHandler(c *gin.Context) {
 		}
 	} else {
 		envelopes, err := dao.GetEnvelopesByUID(uid)
-		fmt.Println("WalletListHandler label 6, get envelopes from mysql", err)
+		logError("WalletListHandler", 6, err)
 		for _, envelope := range envelopes {
 			tmp := gin.H{}
 			tmp["envelope_id"] = envelope.ID
