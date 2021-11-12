@@ -47,10 +47,6 @@ func UpdateCurCount(uid int64) error {
 		tx.Rollback()
 		return err
 	}
-	//if err := tx.Set("gorm:query_option", "FOR UPDATE").First(&user, uid).Error; err != nil {
-	//	tx.Rollback()
-	//	return err
-	//}
 	tx.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&user)
 	user.CurCount++
 	if err := tx.Model(&user).Update("cur_count", user.CurCount).Error; err != nil {
@@ -69,6 +65,36 @@ func UpdateCurCount(uid int64) error {
 func updateAmount(user *User, money int) {
 	user.Amount += money
 	_db.Model(&user).Update("amount", user.Amount)
+}
+
+func UpdateAmount(uid int64, money int) error {
+	tx := _db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	user := User{}
+	err := tx.First(&user, User{ID: uid}).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&user)
+	if err := tx.Model(&user).Update("amount", user.Amount + money).Error; err != nil {
+		fmt.Println(err)
+		tx.Rollback()
+		return err
+	}
+	fmt.Println("Current amount of user ", uid, ": ", user.Amount + money)
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 // combine updateAmount with updateCurCount

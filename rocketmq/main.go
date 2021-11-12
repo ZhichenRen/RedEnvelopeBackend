@@ -52,12 +52,13 @@ func main() {
 				params := msgs[i].GetProperties()
 				uid, err := strconv.Atoi(params["UID"])
 				eid, err := strconv.Atoi(params["EID"])
-				user, err := dao.GetUser(int64(uid))
 				envelope, err := dao.GetEnvelopeByEID(int64(eid))
 				if err == nil {
-					user.Amount += envelope.Value
+					err := dao.UpdateAmount(int64(uid), envelope.Value)
+					for ;err != nil; {
+						err = dao.UpdateAmount(int64(uid), envelope.Value)
+					}
 					envelope.Opened = true
-					db.Save(&user)
 					db.Save(&envelope)
 				} else {
 					fmt.Println("An error happened when writing database.")
