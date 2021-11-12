@@ -108,6 +108,7 @@ func SnatchHandler(c *gin.Context) {
 		//	})
 		//	return
 		//}
+		fmt.Println("Producer information: ", p)
 		var wg sync.WaitGroup
 		topic := "Msg"
 		params := make(map[string]string)

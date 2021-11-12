@@ -10,7 +10,8 @@ import (
 var p rocketmq.Producer
 
 func InitProducer() {
-	p, err := rocketmq.NewProducer(
+	var err error
+	p, err = rocketmq.NewProducer(
 		producer.WithNsResolver(primitive.NewPassthroughResolver([]string{"http://100.64.247.138:24009"})),
 		producer.WithRetry(2),
 		producer.WithNamespace("MQ_INST_8149062485579066312_2586445845"),
@@ -29,6 +30,7 @@ func InitProducer() {
 		fmt.Printf("start producer error: %s", err.Error())
 		return
 	}
+	fmt.Println("Producer started successfully!")
 }
 
 func CloseProducer() {
