@@ -90,7 +90,7 @@ func UpdateAmount(uid int64, money int) error {
 		tx.Rollback()
 		return err
 	}
-	fmt.Println("Current amount of user ", uid, ": ", user.Amount + money)
+	fmt.Println("Current amount of user ", uid, ": ", user.Amount)
 	if err := tx.Commit().Error; err != nil {
 		return err
 	}

@@ -48,7 +48,7 @@ func updateAmount(UserId string, value string) {
 		curAmount, err := strconv.Atoi(users["amount"])
 		fmt.Println("HandlerHelper, updateAmount label 5", err)
 		//users["amount"] = strconv.Itoa(curAmount + valueInt)
-		err = rdb.HSet("User:"+UserId, "amount", curAmount+valueInt).Err()
+		err = rdb.HIncrBy("User:"+UserId, "amount", int64(valueInt)).Err()
 		fmt.Println("HandlerHelper, updateAmount label 6", err)
 	}
 }
