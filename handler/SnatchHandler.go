@@ -115,14 +115,14 @@ func SnatchHandler(c *gin.Context) {
 		err = p.SendAsync(context.Background(),
 			func(ctx context.Context, result *primitive.SendResult, e error) {
 				if e != nil {
-					fmt.Printf("receive message error: %s\n", err)
+					fmt.Printf("receive message error: %s\n", e)
 				} else {
 					fmt.Printf("send message success: result=%s\n", result.String())
 				}
 				wg.Done()
 			}, message)
 		if err != nil {
-			fmt.Println("An error occurred when sending message.")
+			fmt.Printf("An error occurred when sending message: %s\n", err)
 			fmt.Println(message)
 			c.JSON(500, gin.H{
 				"code": 1,
