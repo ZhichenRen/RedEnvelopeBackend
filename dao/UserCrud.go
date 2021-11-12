@@ -1,6 +1,9 @@
 package dao
 
-import "fmt"
+import (
+	"fmt"
+	"gorm.io/gorm/clause"
+)
 
 type User struct {
 	ID       int64
@@ -44,13 +47,17 @@ func UpdateCurCount(uid int64) error {
 		tx.Rollback()
 		return err
 	}
-	if err := tx.Set("gorm:query_option", "FOR UPDATE").First(&user, uid).Error; err != nil {
+	//if err := tx.Set("gorm:query_option", "FOR UPDATE").First(&user, uid).Error; err != nil {
+	//	tx.Rollback()
+	//	return err
+	//}
+	tx.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&user)
+	user.CurCount++
+	if err := tx.Model(&user).Update("cur_count", user.CurCount).Error; err != nil {
+		fmt.Println(err)
 		tx.Rollback()
 		return err
 	}
-
-	user.CurCount++
-	tx.Model(&user).Update("cur_count", user.CurCount)
 	fmt.Println("Current count of user ", uid, ": ", user.CurCount)
 	if err := tx.Commit().Error; err != nil {
 		return err
