@@ -12,6 +12,7 @@ func main() {
 	allocate.Init()
 	handler.InitClient()
 	handler.InitProducer()
+	fmt.Println(handler.GetProducer())
 	r := gin.Default()
 	r.GET("/ping", handler.Ping)
 	r.POST("/snatch", handler.SnatchHandler)

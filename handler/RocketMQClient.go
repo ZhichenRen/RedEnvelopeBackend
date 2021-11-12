@@ -33,6 +33,10 @@ func InitProducer() {
 	fmt.Println("Producer started successfully!")
 }
 
+func GetProducer() rocketmq.Producer{
+	return p
+}
+
 func CloseProducer() {
 	err := p.Shutdown()
 	if err != nil {

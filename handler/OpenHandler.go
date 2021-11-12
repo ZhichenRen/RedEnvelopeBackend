@@ -69,34 +69,8 @@ func OpenHandler(c *gin.Context) {
 		// write to redis
 		rdb.HSet("Envelope:"+envelopeId, "opened", true)
 		updateAmount(userId, value)
-		//p, err := rocketmq.NewProducer(
-		//	producer.WithNsResolver(primitive.NewPassthroughResolver([]string{"http://100.64.247.138:24009"})),
-		//	producer.WithRetry(2),
-		//	producer.WithNamespace("MQ_INST_8149062485579066312_2586445845"),
-		//	producer.WithCredentials(primitive.Credentials{
-		//		AccessKey: "s7lec7baJkQeOBWS6Mb26vmV",
-		//		SecretKey: "TiJYTqrIC7iLBK4UbpkgGJqM",
-		//	}),
-		//	producer.WithGroupName("GID_Group"),
-		//)
-		//if err != nil {
-		//	fmt.Println("OpenHandler label 4, init producer error: " + err.Error())
-		//	c.JSON(500, gin.H{
-		//		"code": 1,
-		//		"msg":  "An error occurred when creating producer.",
-		//	})
-		//	return
-		//}
-		//err = p.Start()
-		//fmt.Println("OpenHandler label 5, start", err)
-		//if err != nil {
-		//	fmt.Printf("start producer error: %s", err.Error())
-		//	c.JSON(500, gin.H{
-		//		"code": 1,
-		//		"msg":  "An error occurred when starting producer.",
-		//	})
-		//	return
-		//}
+
+		p := GetProducer()
 		var wg sync.WaitGroup
 		topic := "Msg"
 		params := make(map[string]string)
