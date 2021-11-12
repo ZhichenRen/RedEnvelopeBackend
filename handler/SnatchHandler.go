@@ -14,21 +14,23 @@ import (
 func SnatchHandler(c *gin.Context) {
 	// bool???
 	userId, flag := c.GetPostForm("uid")
-	fmt.Println("SnatchHandler label -1, GetPostForm uid", flag)
+	if flag == false {
+		fmt.Println("SnatchHandler label -1, GetPostForm uid", flag)
+	}
 	// string -> int64
 	uid, err := strconv.ParseInt(userId, 10, 64)
-	fmt.Println("SnatchHandler label -2, ParseInt", err)
+	logError("SnatchHandler", -2, err)
 	user, err := rdb.HGetAll("User:" + userId).Result()
-	fmt.Println("SnatchHandler label 1, get user from redis", err)
+	logError("SnatchHandler", 1, err)
 	// TODO how to get maxCount
 	// maxCount, err := rdb.Get("MaxCount").Result()
 	// search in mysql
 	if len(user) == 0 {
 		users, err := dao.GetUser(uid)
-		fmt.Println("SnatchHandler label 2, get user from mysql", err)
+		logError("SnatchHandler", 2, err)
 		writeUserToRedis(users)
 		user, err = rdb.HGetAll("User:" + userId).Result()
-		fmt.Println("SnatchHandler label 3, get user from redis", err)
+		logError("SnatchHandler", 3, err)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"code": 1,
@@ -40,13 +42,13 @@ func SnatchHandler(c *gin.Context) {
 
 	// cheat detection
 	snatchCount, err := rdb.Get("User:" + userId + ":Snatch").Int64()
-	fmt.Println("SnatchHandler label 4, get user from redis", err)
+	logError("SnatchHandler", 4, err)
 	if snatchCount == 0 {
 		err = rdb.Set("User:"+userId+":Snatch", 1, 10000000000).Err()
-		fmt.Println("SnatchHandler label 5, set user in redis", err)
+		logError("SnatchHandler", 5, err)
 	} else {
 		snatchCount, err = rdb.Incr("User:" + userId + ":Snatch").Result()
-		fmt.Println("SnatchHandler label 6, increase userId", err)
+		logError("SnatchHandler", 6, err)
 		if snatchCount > 10 {
 			c.JSON(403, gin.H{
 				"code": 2,
@@ -65,17 +67,14 @@ func SnatchHandler(c *gin.Context) {
 
 	maxCount := 10
 	curCount, err := strconv.Atoi(user["cur_count"])
-	fmt.Println("SnatchHandler label -4, Atoi", err)
+	logError("SnatchHandler", -4, err)
 	if curCount < maxCount {
 		// TODO
 		// OUR CODE HERE
 		// 随机数判断用户是否抢到红包，后期需要替换
 		// ...
 		curCount, err := rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
-		fmt.Println("SnatchHandler label 7, increase cur_count", err)
-		if err != nil {
-			fmt.Println(err)
-		}
+		logError("SnatchHandler", 7, err)
 		newEnvelope := createEnvelope(userId)
 		writeEnvelopesSet(newEnvelope, userId)
 
