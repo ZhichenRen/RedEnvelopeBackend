@@ -8,8 +8,10 @@ import (
 )
 
 func WalletListHandler(c *gin.Context) {
-	userId, _ := c.GetPostForm("uid")
-	uid, _ := strconv.ParseInt(userId, 10, 64)
+	userId, flag := c.GetPostForm("uid")
+	fmt.Println("WalletListHandler label -1, GetPostForm", flag)
+	uid, err := strconv.ParseInt(userId, 10, 64)
+	fmt.Println("WalletListHandler label -2, ParseInt", err)
 	envelopeList, err := rdb.SMembers("User:" + userId + ":Envelopes").Result()
 	fmt.Println("WalletListHandler label 1, get envelopeList from redis", err)
 	users, err := rdb.HGetAll("User:" + userId).Result()
@@ -24,8 +26,10 @@ func WalletListHandler(c *gin.Context) {
 		curCount = user.CurCount
 		writeUserToRedis(user)
 	} else {
-		curCount, _ = strconv.Atoi(users["cur_count"])
-		amount, _ = strconv.Atoi(users["amount"])
+		curCount, err = strconv.Atoi(users["cur_count"])
+		fmt.Println("WalletListHandler label -3, Atoi", err)
+		amount, err = strconv.Atoi(users["amount"])
+		fmt.Println("WalletListHandler label -4, Atoi", err)
 	}
 	if len(envelopeList) == curCount {
 		for _, envelopeId := range envelopeList {
@@ -43,7 +47,8 @@ func WalletListHandler(c *gin.Context) {
 				}
 				data = append(data, tmp)
 			} else {
-				eid, _ := strconv.ParseInt(envelopeId, 10, 64)
+				eid, err := strconv.ParseInt(envelopeId, 10, 64)
+				fmt.Println("WalletListHandler label -5, ParseInt", err)
 				envelopeFromSql, err := dao.GetEnvelopeByEID(eid)
 				fmt.Println("WalletListHandler label 5, get envelope from mysql", err)
 				tmp := gin.H{}

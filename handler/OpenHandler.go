@@ -13,9 +13,12 @@ import (
 )
 
 func OpenHandler(c *gin.Context) {
-	userId, _ := c.GetPostForm("uid")
-	envelopeId, _ := c.GetPostForm("envelope_id")
-	uid, _ := strconv.ParseInt(userId, 10, 64)
+	userId, flag := c.GetPostForm("uid")
+	fmt.Println("OpenHandler label -1, GetPostForm", flag)
+	envelopeId, flag := c.GetPostForm("envelope_id")
+	fmt.Println("OpenHandler label -2, GetPostForm", flag)
+	uid, err := strconv.ParseInt(userId, 10, 64)
+	fmt.Println("OpenHandler label -3, ParseInt", err)
 	//eid, _ := strconv.ParseInt(envelopeId, 10, 64)
 	envelopes, err := rdb.HGetAll("Envelope:" + envelopeId).Result()
 	fmt.Println("OpenHandler label 1, get envelopes from redis", err)

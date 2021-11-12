@@ -14,9 +14,12 @@ import (
 )
 
 func SnatchHandler(c *gin.Context) {
-	userId, _ := c.GetPostForm("uid")
+	// bool???
+	userId, flag := c.GetPostForm("uid")
+	fmt.Println("SnatchHandler label -1, GetPostForm uid", flag)
 	// string -> int64
 	uid, err := strconv.ParseInt(userId, 10, 64)
+	fmt.Println("SnatchHandler label -2, ParseInt", err)
 	user, err := rdb.HGetAll("User:" + userId).Result()
 	fmt.Println("SnatchHandler label 1, get user from redis", err)
 	// TODO how to get maxCount
@@ -63,7 +66,8 @@ func SnatchHandler(c *gin.Context) {
 	}
 
 	maxCount := 10
-	curCount, _ := strconv.Atoi(user["cur_count"])
+	curCount, err := strconv.Atoi(user["cur_count"])
+	fmt.Println("SnatchHandler label -4, Atoi", err)
 	if curCount < maxCount {
 		// TODO
 		// OUR CODE HERE
