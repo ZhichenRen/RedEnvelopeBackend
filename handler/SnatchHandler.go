@@ -18,20 +18,20 @@ func SnatchHandler(c *gin.Context) {
 	// string -> int64
 	uid, err := strconv.ParseInt(userId, 10, 64)
 	user, err := rdb.HGetAll("User:" + userId).Result()
-	if err != nil {
-		fmt.Println(err)
-	}
+	fmt.Println("SnatchHandler label 1, get user from redis", err)
 	// TODO how to get maxCount
 	// maxCount, err := rdb.Get("MaxCount").Result()
 	// search in mysql
 	if len(user) == 0 {
 		users, err := dao.GetUser(uid)
+		fmt.Println("SnatchHandler label 2, get user from mysql", err)
 		writeUserToRedis(users)
 		user, err = rdb.HGetAll("User:" + userId).Result()
+		fmt.Println("SnatchHandler label 3, get user from redis", err)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"code": 1,
-				"msg": "A database error occurred.",
+				"msg":  "A database error occurred.",
 			})
 			return
 		}
@@ -39,14 +39,17 @@ func SnatchHandler(c *gin.Context) {
 
 	// cheat detection
 	snatchCount, err := rdb.Get("User:" + userId + ":Snatch").Int64()
+	fmt.Println("SnatchHandler label 4, get user from redis", err)
 	if snatchCount == 0 {
-		err = rdb.Set("User:" + userId + ":Snatch", 1, 60000000000).Err()
+		err = rdb.Set("User:"+userId+":Snatch", 1, 60000000000).Err()
+		fmt.Println("SnatchHandler label 5, set user in redis", err)
 	} else {
 		snatchCount, err = rdb.Incr("User:" + userId + ":Snatch").Result()
+		fmt.Println("SnatchHandler label 6, increase userId", err)
 		if snatchCount > 60 {
 			c.JSON(403, gin.H{
 				"code": 2,
-				"msg": "系统检测到你在作弊！",
+				"msg":  "系统检测到你在作弊！",
 			})
 			return
 		}
@@ -54,7 +57,7 @@ func SnatchHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(500, gin.H{
 			"code": 1,
-			"msg": "A database error occurred.",
+			"msg":  "A database error occurred.",
 		})
 		return
 	}
@@ -67,6 +70,7 @@ func SnatchHandler(c *gin.Context) {
 		// 随机数判断用户是否抢到红包，后期需要替换
 		// ...
 		curCount, err := rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
+		fmt.Println("SnatchHandler label 7, increase cur_count", err)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -88,16 +92,17 @@ func SnatchHandler(c *gin.Context) {
 			fmt.Println("init producer error: " + err.Error())
 			c.JSON(500, gin.H{
 				"code": 1,
-				"msg": "An error occurred when creating producer.",
+				"msg":  "An error occurred when creating producer.",
 			})
 			return
 		}
 		err = p.Start()
+		fmt.Println("SnatchHandler label 8, start", err)
 		if err != nil {
 			fmt.Printf("start producer error: %s", err.Error())
 			c.JSON(500, gin.H{
 				"code": 1,
-				"msg": "An error occurred when starting producer.",
+				"msg":  "An error occurred when starting producer.",
 			})
 			return
 		}
@@ -122,20 +127,21 @@ func SnatchHandler(c *gin.Context) {
 				wg.Done()
 			}, message)
 		if err != nil {
-			fmt.Println("An error occurred when sending message.")
+			fmt.Printf("SnatchHandler label 9, an error occurred when sending message:%s\n", err)
 			fmt.Println(message)
 			c.JSON(500, gin.H{
 				"code": 1,
-				"msg": "An error occurred when sending message.",
+				"msg":  "An error occurred when sending message.",
 			})
 			return
 		}
 		wg.Wait()
 		err = p.Shutdown()
+		fmt.Println("SnatchHandler label 10, shutdown", err)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"code": 1,
-				"msg": "An error occurred when closing producer.",
+				"msg":  "An error occurred when closing producer.",
 			})
 			return
 		}
