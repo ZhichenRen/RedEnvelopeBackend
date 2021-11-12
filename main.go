@@ -11,6 +11,7 @@ func main() {
 	//test()
 	allocate.Init()
 	handler.InitClient()
+	handler.InitProducer()
 	r := gin.Default()
 	r.GET("/ping", handler.Ping)
 	r.POST("/snatch", handler.SnatchHandler)
@@ -20,6 +21,7 @@ func main() {
 	r.GET("/consume", handler.Consumer)
 	//r.GET("/push_consume", handler.PushConsumer)
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	handler.CloseProducer()
 }
 
 func test() {

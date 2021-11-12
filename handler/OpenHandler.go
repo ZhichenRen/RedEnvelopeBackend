@@ -3,9 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
-	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/gin-gonic/gin"
 	"go-web/dao"
 	"strconv"
@@ -71,34 +69,34 @@ func OpenHandler(c *gin.Context) {
 		// write to redis
 		rdb.HSet("Envelope:"+envelopeId, "opened", true)
 		updateAmount(userId, value)
-		p, err := rocketmq.NewProducer(
-			producer.WithNsResolver(primitive.NewPassthroughResolver([]string{"http://100.64.247.138:24009"})),
-			producer.WithRetry(2),
-			producer.WithNamespace("MQ_INST_8149062485579066312_2586445845"),
-			producer.WithCredentials(primitive.Credentials{
-				AccessKey: "s7lec7baJkQeOBWS6Mb26vmV",
-				SecretKey: "TiJYTqrIC7iLBK4UbpkgGJqM",
-			}),
-			producer.WithGroupName("GID_Group"),
-		)
-		if err != nil {
-			fmt.Println("OpenHandler label 4, init producer error: " + err.Error())
-			c.JSON(500, gin.H{
-				"code": 1,
-				"msg":  "An error occurred when creating producer.",
-			})
-			return
-		}
-		err = p.Start()
-		fmt.Println("OpenHandler label 5, start", err)
-		if err != nil {
-			fmt.Printf("start producer error: %s", err.Error())
-			c.JSON(500, gin.H{
-				"code": 1,
-				"msg":  "An error occurred when starting producer.",
-			})
-			return
-		}
+		//p, err := rocketmq.NewProducer(
+		//	producer.WithNsResolver(primitive.NewPassthroughResolver([]string{"http://100.64.247.138:24009"})),
+		//	producer.WithRetry(2),
+		//	producer.WithNamespace("MQ_INST_8149062485579066312_2586445845"),
+		//	producer.WithCredentials(primitive.Credentials{
+		//		AccessKey: "s7lec7baJkQeOBWS6Mb26vmV",
+		//		SecretKey: "TiJYTqrIC7iLBK4UbpkgGJqM",
+		//	}),
+		//	producer.WithGroupName("GID_Group"),
+		//)
+		//if err != nil {
+		//	fmt.Println("OpenHandler label 4, init producer error: " + err.Error())
+		//	c.JSON(500, gin.H{
+		//		"code": 1,
+		//		"msg":  "An error occurred when creating producer.",
+		//	})
+		//	return
+		//}
+		//err = p.Start()
+		//fmt.Println("OpenHandler label 5, start", err)
+		//if err != nil {
+		//	fmt.Printf("start producer error: %s", err.Error())
+		//	c.JSON(500, gin.H{
+		//		"code": 1,
+		//		"msg":  "An error occurred when starting producer.",
+		//	})
+		//	return
+		//}
 		var wg sync.WaitGroup
 		topic := "Msg"
 		params := make(map[string]string)
@@ -125,14 +123,14 @@ func OpenHandler(c *gin.Context) {
 			})
 		}
 		wg.Wait()
-		err = p.Shutdown()
-		fmt.Println("OpenHandler label 7, shutdown", err)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"code": 1,
-				"msg":  "An error occurred when closing producer.",
-			})
-		}
+		//err = p.Shutdown()
+		//fmt.Println("OpenHandler label 7, shutdown", err)
+		//if err != nil {
+		//	c.JSON(500, gin.H{
+		//		"code": 1,
+		//		"msg":  "An error occurred when closing producer.",
+		//	})
+		//}
 		c.JSON(200, gin.H{
 			"code":    0,
 			"message": "success",
