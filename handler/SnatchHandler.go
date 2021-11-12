@@ -122,6 +122,8 @@ func SnatchHandler(c *gin.Context) {
 				wg.Done()
 			}, message)
 		if err != nil {
+			fmt.Println("An error occurred when sending message.")
+			fmt.Println(message)
 			c.JSON(500, gin.H{
 				"code": 1,
 				"msg": "An error occurred when sending message.",
