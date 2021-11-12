@@ -42,12 +42,12 @@ func SnatchHandler(c *gin.Context) {
 	snatchCount, err := rdb.Get("User:" + userId + ":Snatch").Int64()
 	fmt.Println("SnatchHandler label 4, get user from redis", err)
 	if snatchCount == 0 {
-		err = rdb.Set("User:"+userId+":Snatch", 1, 60000000000).Err()
+		err = rdb.Set("User:"+userId+":Snatch", 1, 10000000000).Err()
 		fmt.Println("SnatchHandler label 5, set user in redis", err)
 	} else {
 		snatchCount, err = rdb.Incr("User:" + userId + ":Snatch").Result()
 		fmt.Println("SnatchHandler label 6, increase userId", err)
-		if snatchCount > 60 {
+		if snatchCount > 10 {
 			c.JSON(403, gin.H{
 				"code": 2,
 				"msg":  "系统检测到你在作弊！",
@@ -81,7 +81,6 @@ func SnatchHandler(c *gin.Context) {
 
 		// message queue
 		p := GetProducer()
-		fmt.Println("Producer information: ", p)
 		var wg sync.WaitGroup
 		topic := "Msg"
 		params := make(map[string]string)

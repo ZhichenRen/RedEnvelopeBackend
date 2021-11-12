@@ -25,6 +25,37 @@ func updateCurCount(user *User) {
 	_db.Model(&user).Update("cur_count", user.CurCount)
 }
 
+func UpdateCurCount(uid int64) error {
+	tx := _db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	user := User{}
+	err := tx.First(&user, User{ID: uid}).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	if err := tx.Set("gorm:query_option", "FOR UPDATE").First(&user, uid).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	user.CurCount++
+	tx.Model(&user).Update("cur_count", user.CurCount)
+
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 // update amount, concretely, user grab a red envelope
 func updateAmount(user *User, money int) {
 	user.Amount += money

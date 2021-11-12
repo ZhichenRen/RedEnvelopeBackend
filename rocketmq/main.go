@@ -34,18 +34,18 @@ func main() {
 			switch string(msgs[i].Body) {
 			case "create_envelope":
 				params := msgs[i].GetProperties()
-				var user dao.User
 				uid, err := strconv.Atoi(params["UID"])
 				id, err := strconv.Atoi(params["EID"])
 				snatchTime, err := strconv.Atoi(params["SnatchTime"])
 				value, err := strconv.Atoi(params["Value"])
-				err = db.Where("cur_count < ?", 50).First(&user, dao.User{ID: int64(uid)}).Error
 				if err == nil {
 					envelope := dao.Envelope{UID: int64(uid), ID: int64(id), Opened: false, SnatchTime: int64(snatchTime), Value: value}
 					db.Create(&envelope)
-					user.CurCount++
-					db.Save(&user)
 					fmt.Println(envelope)
+					err := dao.UpdateCurCount(int64(uid))
+					for ;err != nil; {
+						err = dao.UpdateCurCount(int64(uid))
+					}
 				} else {
 					fmt.Println("An error happened when writing database.")
 				}
