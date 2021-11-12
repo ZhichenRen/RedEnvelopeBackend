@@ -1,5 +1,7 @@
 package dao
 
+import "fmt"
+
 type User struct {
 	ID       int64
 	CurCount int `json:"cur_count"`
@@ -49,7 +51,7 @@ func UpdateCurCount(uid int64) error {
 
 	user.CurCount++
 	tx.Model(&user).Update("cur_count", user.CurCount)
-
+	fmt.Println("Current count of user ", uid, ": ", user.CurCount)
 	if err := tx.Commit().Error; err != nil {
 		return err
 	}
