@@ -41,11 +41,11 @@ func main() {
 				if err == nil {
 					envelope := dao.Envelope{UID: int64(uid), ID: int64(id), Opened: false, SnatchTime: int64(snatchTime), Value: value}
 					db.Create(&envelope)
-					fmt.Println(envelope)
-					err := dao.UpdateCurCount(int64(uid))
+					count, err := dao.UpdateCurCount(int64(uid))
 					for ;err != nil; {
-						err = dao.UpdateCurCount(int64(uid))
+						count, err = dao.UpdateCurCount(int64(uid))
 					}
+					fmt.Println("Current count of user", uid, ": ", count)
 				} else {
 					fmt.Println("An error happened when writing database.")
 				}
