@@ -42,7 +42,7 @@ func SnatchHandler(c *gin.Context) {
 	// cheat detection
 	snatchCount, err := rdb.Get("User:" + userId + ":Snatch").Int64()
 	logError("SnatchHandler", 4, err)
-	if snatchCount == 0 {
+	if err == redis.Nil {
 		err = rdb.Set("User:"+userId+":Snatch", 1, 10000000000).Err()
 		logError("SnatchHandler", 5, err)
 	} else {
@@ -114,8 +114,9 @@ func SnatchHandler(c *gin.Context) {
 	if curCount < maxCount {
 		// TODO
 		// 这里的HIncrBy在高并发情况下似乎会有问题
-		newCount, err := rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
-		fmt.Println("User:", userId, " Old Count: ", curCount, " New Count:", newCount)
+		oldCount := curCount
+		curCount, err = rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
+		fmt.Println("User:", userId, " Old Count: ", oldCount, " New Count:", curCount)
 		logError("SnatchHandler", 10, err)
 		newEnvelope := createEnvelope(userId)
 		writeEnvelopesSet(newEnvelope, userId)
