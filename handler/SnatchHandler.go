@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 	"go-web/dao"
 	"math/rand"
 	"strconv"
@@ -19,8 +20,8 @@ func SnatchHandler(c *gin.Context) {
 		fmt.Println("SnatchHandler label -1, GetPostForm uid", flag)
 	}
 	isCheat, err := rdb.Get("User:" + userId + ":Cheat").Result()
-	if err != nil{
-		logError("SnatchHandler", 0, err)
+	if err != nil && err != redis.Nil{
+		logError("SnatchHandler", 7, err)
 		c.JSON(500, gin.H{
 			"code": 1,
 			"msg":  "A database error occurred.",
@@ -48,9 +49,9 @@ func SnatchHandler(c *gin.Context) {
 		snatchCount, err = rdb.Incr("User:" + userId + ":Snatch").Result()
 		logError("SnatchHandler", 6, err)
 		if snatchCount > 10 {
-			err := rdb.Set("User:"+userId+":Cheat", 1, 43200000000000).Err()
+			err := rdb.Set("User:" + userId + ":Cheat", 1, 43200000000000).Err()
 			if err != nil {
-				logError("SnatchHAndler", 0, err)
+				logError("SnatchHandler", 8, err)
 				c.JSON(500, gin.H{
 					"code": 1,
 					"msg":  "A database error occurred.",
@@ -91,14 +92,14 @@ func SnatchHandler(c *gin.Context) {
 
 	probability, err := rdb.Get("Probability").Int()
 	fmt.Println(probability, err)
-	//if err != nil {
-	//	logError("SnatchHandler", 0, err)
-	//	c.JSON(500, gin.H{
-	//		"code": 1,
-	//		"msg":  "A database error occurred.",
-	//	})
-	//	return
-	//}
+	if err != nil {
+		logError("SnatchHandler", 9, err)
+		c.JSON(500, gin.H{
+			"code": 1,
+			"msg":  "A database error occurred.",
+		})
+		return
+	}
 	n := rand.Intn(100)
 	if n >= probability {
 		c.JSON(200, gin.H{
