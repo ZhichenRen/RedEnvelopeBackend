@@ -90,6 +90,7 @@ func SnatchHandler(c *gin.Context) {
 	}
 
 	probability, err := rdb.Get("Probability").Int()
+	fmt.Println(probability, err)
 	if err != nil {
 		logError("SnatchHandler", 0, err)
 		if err != nil {
