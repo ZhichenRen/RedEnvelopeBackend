@@ -91,7 +91,6 @@ func SnatchHandler(c *gin.Context) {
 	}
 
 	probability, err := rdb.Get("Probability").Int()
-	fmt.Println(probability, err)
 	if err != nil {
 		logError("SnatchHandler", 9, err)
 		c.JSON(500, gin.H{
@@ -118,7 +117,8 @@ func SnatchHandler(c *gin.Context) {
 		// 随机数判断用户是否抢到红包，后期需要替换
 		// ...
 		curCount, err := rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
-		logError("SnatchHandler", 7, err)
+		fmt.Println("User:", userId, " Current Count:", curCount)
+		logError("SnatchHandler", 10, err)
 		newEnvelope := createEnvelope(userId)
 		writeEnvelopesSet(newEnvelope, userId)
 
@@ -133,7 +133,6 @@ func SnatchHandler(c *gin.Context) {
 		params["SnatchTime"] = strconv.Itoa(int(time.Now().Unix()))
 		message := primitive.NewMessage(topic, []byte("create_envelope"))
 		message.WithProperties(params)
-		fmt.Println(params)
 		wg.Add(1)
 		err = p.SendAsync(context.Background(),
 			func(ctx context.Context, result *primitive.SendResult, e error) {
@@ -154,15 +153,7 @@ func SnatchHandler(c *gin.Context) {
 			return
 		}
 		wg.Wait()
-		//err = p.Shutdown()
-		//fmt.Println("SnatchHandler label 10, shutdown", err)
-		//if err != nil {
-		//	c.JSON(500, gin.H{
-		//		"code": 1,
-		//		"msg":  "An error occurred when closing producer.",
-		//	})
-		//	return
-		//}
+
 		c.JSON(200, gin.H{
 			"code": 0,
 			"msg":  "success",
