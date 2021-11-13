@@ -1,17 +1,16 @@
 package allocate
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
 )
 
-var curAllocate int64
-var budget int64
-var total int64
-var moneyLeft int64
-var envelopeLeft int64
+//var curAllocate int64
+//var budget int64
+//var total int64
+//var moneyLeft int64
+//var envelopeLeft int64
 var deviation float64
 var minAllocate float64
 var maxAllocate float64
@@ -22,12 +21,12 @@ var rand1 float64
 func Init() {
 	// TODO
 	// read from config?
-	budget = 1000000
-	total = 5000
-	deviation = 0.2
-	curAllocate = 0
-	moneyLeft = budget
-	envelopeLeft = total
+	//budget = 1000000
+	//total = 5000
+	deviation = 0.25
+	//curAllocate = 0
+	//moneyLeft = budget
+	//envelopeLeft = total
 	flag = false
 	rand.Seed(time.Now().Unix())
 }
@@ -41,10 +40,6 @@ func MoneyAllocate(moneyLeft, envelopeLeft int64) (value int) {
 	if int64(value) > moneyLeft {
 		value = int(moneyLeft)
 	}
-	moneyLeft -= int64(value)
-	envelopeLeft -= 1
-	fmt.Print("moneyLeft:")
-	fmt.Println(moneyLeft)
 	return
 }
 

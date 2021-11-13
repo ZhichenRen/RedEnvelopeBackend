@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"go-web/allocate"
 	"go-web/handler"
 )
 
 func main() {
-	//allocate.Init()
+	allocate.Init()
 	handler.InitClient()
 	handler.InitProducer()
 	fmt.Println(handler.GetProducer())
