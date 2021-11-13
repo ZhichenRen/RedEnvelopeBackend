@@ -6,6 +6,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/gin-gonic/gin"
 	"go-web/dao"
+	"math/rand"
 	"strconv"
 	"sync"
 	"time"
@@ -17,28 +18,25 @@ func SnatchHandler(c *gin.Context) {
 	if flag == false {
 		fmt.Println("SnatchHandler label -1, GetPostForm uid", flag)
 	}
+	isCheat, err := rdb.Get("User:" + userId + ":Cheat").Result()
+	if err != nil{
+		logError("SnatchHandler", 0, err)
+		c.JSON(500, gin.H{
+			"code": 1,
+			"msg":  "A database error occurred.",
+		})
+		return
+	}
+	if isCheat == "1" {
+		c.JSON(403, gin.H{
+			"code": 2,
+			"msg":  "您因为作弊被系统封禁！",
+		})
+		return
+	}
 	// string -> int64
 	uid, err := strconv.ParseInt(userId, 10, 64)
 	logError("SnatchHandler", -2, err)
-	user, err := rdb.HGetAll("User:" + userId).Result()
-	logError("SnatchHandler", 1, err)
-	// TODO how to get maxCount
-	// maxCount, err := rdb.Get("MaxCount").Result()
-	// search in mysql
-	if len(user) == 0 {
-		users, err := dao.GetUser(uid)
-		logError("SnatchHandler", 2, err)
-		writeUserToRedis(users)
-		user, err = rdb.HGetAll("User:" + userId).Result()
-		logError("SnatchHandler", 3, err)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"code": 1,
-				"msg":  "A database error occurred.",
-			})
-			return
-		}
-	}
 
 	// cheat detection
 	snatchCount, err := rdb.Get("User:" + userId + ":Snatch").Int64()
@@ -50,6 +48,15 @@ func SnatchHandler(c *gin.Context) {
 		snatchCount, err = rdb.Incr("User:" + userId + ":Snatch").Result()
 		logError("SnatchHandler", 6, err)
 		if snatchCount > 10 {
+			err := rdb.Set("User:"+userId+":Cheat", 1, 43200000000000).Err()
+			if err != nil {
+				logError("SnatchHAndler", 0, err)
+				c.JSON(500, gin.H{
+					"code": 1,
+					"msg":  "A database error occurred.",
+				})
+				return
+			}
 			c.JSON(403, gin.H{
 				"code": 2,
 				"msg":  "系统检测到你在作弊！",
@@ -65,7 +72,38 @@ func SnatchHandler(c *gin.Context) {
 		return
 	}
 
-	maxCount := 10
+	user, err := rdb.HGetAll("User:" + userId).Result()
+	logError("SnatchHandler", 1, err)
+	if len(user) == 0 {
+		users, err := dao.GetUser(uid)
+		logError("SnatchHandler", 2, err)
+		writeUserToRedis(users)
+		user, err = rdb.HGetAll("User:" + userId).Result()
+		logError("SnatchHandler", 3, err)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"code": 1,
+				"msg":  "A database error occurred.",
+			})
+			return
+		}
+	}
+
+	probability, err := rdb.Get("Probability").Int()
+	if err != nil {
+		logError("SnatchHandler", 0, err)
+		c.JSON()
+	}
+	n := rand.Intn(100)
+	if n >= probability {
+		c.JSON(500, gin.H{
+			"code": 1,
+			"msg":  "A database error occurred.",
+		})
+		return
+	}
+
+	maxCount, err := rdb.Get("MaxCount").Int()
 	curCount, err := strconv.Atoi(user["cur_count"])
 	logError("SnatchHandler", -4, err)
 	if curCount < maxCount {
