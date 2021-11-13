@@ -109,14 +109,12 @@ func SnatchHandler(c *gin.Context) {
 	}
 
 	maxCount, err := rdb.Get("MaxCount").Int()
-	curCount, err := strconv.Atoi(user["cur_count"])
+	curCount, err := rdb.HGet("User:" + userId, "cur_count").Int()
 	logError("SnatchHandler", -4, err)
 	if curCount < maxCount {
 		// TODO
-		// OUR CODE HERE
-		// 随机数判断用户是否抢到红包，后期需要替换
-		// ...
-		curCount, err := rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
+		// 这里的HIncrBy在高并发情况下似乎会有问题
+		curCount, err = rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
 		fmt.Println("User:", userId, " Current Count:", curCount)
 		logError("SnatchHandler", 10, err)
 		newEnvelope := createEnvelope(userId)
