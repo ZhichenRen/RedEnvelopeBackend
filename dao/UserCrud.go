@@ -19,9 +19,18 @@ func GetUser(uid int64) (user User, err error) {
 }
 
 // create a user
-func createUser(user User) {
+func CreateUser(user User) {
 	_db.Create(&user)
 	return
+}
+
+func CreateBatchUsers(users [10000]User) {
+	_db.CreateInBatches(&users, 10000)
+}
+
+func SetZero() {
+	_db.Model(&User{}).Where("id <= 10000").Update("cur_count", 0)
+	_db.Model(&User{}).Where("id <= 10000").Update("amount", 0)
 }
 
 // update CurCount, concretely, user grab a red envelope
@@ -85,7 +94,7 @@ func UpdateAmount(uid int64, money int) error {
 		return err
 	}
 	tx.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&user)
-	if err := tx.Model(&user).Update("amount", user.Amount + money).Error; err != nil {
+	if err := tx.Model(&user).Update("amount", user.Amount+money).Error; err != nil {
 		fmt.Println(err)
 		tx.Rollback()
 		return err
