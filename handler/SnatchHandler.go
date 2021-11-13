@@ -29,7 +29,7 @@ func SnatchHandler(c *gin.Context) {
 		return
 	}
 	if isCheat == "1" {
-		c.JSON(403, gin.H{
+		c.JSON(200, gin.H{
 			"code": 2,
 			"msg":  "您因为作弊被系统封禁！",
 		})
@@ -58,7 +58,7 @@ func SnatchHandler(c *gin.Context) {
 				})
 				return
 			}
-			c.JSON(403, gin.H{
+			c.JSON(200, gin.H{
 				"code": 2,
 				"msg":  "系统检测到你在作弊！",
 			})
