@@ -91,16 +91,14 @@ func SnatchHandler(c *gin.Context) {
 
 	probability, err := rdb.Get("Probability").Int()
 	fmt.Println(probability, err)
-	if err != nil {
-		logError("SnatchHandler", 0, err)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"code": 1,
-				"msg":  "A database error occurred.",
-			})
-			return
-		}
-	}
+	//if err != nil {
+	//	logError("SnatchHandler", 0, err)
+	//	c.JSON(500, gin.H{
+	//		"code": 1,
+	//		"msg":  "A database error occurred.",
+	//	})
+	//	return
+	//}
 	n := rand.Intn(100)
 	if n >= probability {
 		c.JSON(200, gin.H{
