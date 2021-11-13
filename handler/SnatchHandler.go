@@ -108,7 +108,7 @@ func SnatchHandler(c *gin.Context) {
 		return
 	}
 
-	maxCount, err := rdb.Get("MaxCount").Int()
+	maxCount, err := rdb.Get("MaxCount").Int64()
 	curCount, err := rdb.HGet("User:" + userId, "cur_count").Int64()
 	logError("SnatchHandler", -4, err)
 	if curCount < maxCount {
