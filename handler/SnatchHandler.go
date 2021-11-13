@@ -114,8 +114,8 @@ func SnatchHandler(c *gin.Context) {
 	if curCount < maxCount {
 		// TODO
 		// 这里的HIncrBy在高并发情况下似乎会有问题
-		curCount, err = rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
-		fmt.Println("User:", userId, " Current Count:", curCount)
+		newCount, err := rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
+		fmt.Println("User:", userId, " Old Count: ", curCount, " New Count:", newCount)
 		logError("SnatchHandler", 10, err)
 		newEnvelope := createEnvelope(userId)
 		writeEnvelopesSet(newEnvelope, userId)
@@ -164,7 +164,7 @@ func SnatchHandler(c *gin.Context) {
 	} else {
 		c.JSON(200, gin.H{
 			"code": 2,
-			"msg":  "很抱歉，您没有抢到红包，这可能是因为手气不佳或已达上限",
+			"msg":  "您的可抢红包数已达上限！",
 		})
 	}
 }
