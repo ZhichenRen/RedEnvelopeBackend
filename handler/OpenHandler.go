@@ -66,8 +66,8 @@ func OpenHandler(c *gin.Context) {
 	realUId := envelopes["uid"]
 	if userId != realUId {
 		c.JSON(200, gin.H{
-			"code":    4,
-			"message": "这个红包不属于您，您无权打开！",
+			"code":    3,
+			"message": "这个红包不存在或不属于您，您无权打开！",
 		})
 		return
 	}
