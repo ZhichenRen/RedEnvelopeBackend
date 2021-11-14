@@ -40,9 +40,9 @@ func OpenHandler(c *gin.Context) {
 		logError("OpenHandler", 2, err)
 		// error or envelope not found
 		if err != nil {
-			c.JSON(500, gin.H{
-				"code": 1,
-				"msg":  "A database error occurred or the envelope didn't exist.",
+			c.JSON(200, gin.H{
+				"code": 3,
+				"msg":  "您输入的红包ID不存在！",
 			})
 			return
 		}
@@ -66,7 +66,7 @@ func OpenHandler(c *gin.Context) {
 	realUId := envelopes["uid"]
 	if userId != realUId {
 		c.JSON(200, gin.H{
-			"code":    2,
+			"code":    4,
 			"message": "这个红包不属于您，您无权打开！",
 		})
 		return

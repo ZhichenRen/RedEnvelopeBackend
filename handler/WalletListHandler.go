@@ -24,6 +24,13 @@ func WalletListHandler(c *gin.Context) {
 	if len(users) == 0 {
 		user, err := dao.GetUser(uid)
 		logError("WalletListHandler", 3, err)
+		if err != nil {
+			c.JSON(200, gin.H{
+				"code": 2,
+				"msg": "用户ID不存在",
+			})
+			return
+		}
 		amount = user.Amount
 		curCount = user.CurCount
 		writeUserToRedis(user)

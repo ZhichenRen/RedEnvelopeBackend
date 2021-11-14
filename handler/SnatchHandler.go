@@ -30,7 +30,7 @@ func SnatchHandler(c *gin.Context) {
 	}
 	if isCheat == "1" {
 		c.JSON(200, gin.H{
-			"code": 2,
+			"code": 3,
 			"msg":  "您因为作弊被系统封禁！",
 		})
 		return
@@ -59,7 +59,7 @@ func SnatchHandler(c *gin.Context) {
 				return
 			}
 			c.JSON(200, gin.H{
-				"code": 2,
+				"code": 3,
 				"msg":  "系统检测到你在作弊！",
 			})
 			return
@@ -78,6 +78,13 @@ func SnatchHandler(c *gin.Context) {
 	if len(user) == 0 {
 		users, err := dao.GetUser(uid)
 		logError("SnatchHandler", 2, err)
+		if err != nil {
+			c.JSON(200, gin.H{
+				"code": 2,
+				"msg": "用户ID不存在",
+			})
+			return
+		}
 		writeUserToRedis(users)
 		user, err = rdb.HGetAll("User:" + userId).Result()
 		logError("SnatchHandler", 3, err)
@@ -102,7 +109,7 @@ func SnatchHandler(c *gin.Context) {
 	n := rand.Intn(100)
 	if n >= probability {
 		c.JSON(200, gin.H{
-			"code": 2,
+			"code": 4,
 			"msg":  "很遗憾，您运气不太好，没能抢到红包！",
 		})
 		return
@@ -164,7 +171,7 @@ func SnatchHandler(c *gin.Context) {
 		})
 	} else {
 		c.JSON(200, gin.H{
-			"code": 2,
+			"code": 5,
 			"msg":  "您的可抢红包数已达上限！",
 		})
 	}
