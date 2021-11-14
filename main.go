@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func main() {
+func setupRouter() *gin.Engine{
 	allocate.Init()
 	handler.InitClient()
 	handler.InitProducer()
@@ -22,6 +22,11 @@ func main() {
 	r.POST("/snatch", handler.SnatchHandler)
 	r.POST("/open", handler.OpenHandler)
 	r.POST("/get_wallet_list", handler.WalletListHandler)
+	return r
+}
+
+func main() {
+	r := setupRouter()
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	handler.CloseProducer()
 }
