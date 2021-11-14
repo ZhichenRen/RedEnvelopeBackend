@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"go-web/allocate"
 	"go-web/handler"
@@ -17,7 +16,6 @@ func setupRouter() *gin.Engine{
 	fmt.Println(handler.GetProducer())
 	r := gin.Default()
 	r.Use(tokenbucket.NewLimiter(10000, 10000, 500*time.Millisecond))
-	pprof.Register(r)
 	r.GET("/ping", handler.Ping)
 	r.POST("/snatch", handler.SnatchHandler)
 	r.POST("/open", handler.OpenHandler)
