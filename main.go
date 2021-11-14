@@ -16,7 +16,7 @@ func setupRouter() *gin.Engine{
 	handler.InitProducer()
 	fmt.Println(handler.GetProducer())
 	r := gin.Default()
-	r.Use(tokenbucket.NewLimiter(2000, 2000, 500*time.Millisecond))
+	r.Use(tokenbucket.NewLimiter(10000, 10000, 500*time.Millisecond))
 	pprof.Register(r)
 	r.GET("/ping", handler.Ping)
 	r.POST("/snatch", handler.SnatchHandler)
