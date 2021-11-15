@@ -49,7 +49,7 @@ func SnatchHandler(c *gin.Context) {
 		snatchCount, err = rdb.Incr("User:" + userId + ":Snatch").Result()
 		logError("SnatchHandler", 6, err)
 		if snatchCount > 10 {
-			err := rdb.Set("User:" + userId + ":Cheat", 1, 43200000000000).Err()
+			err := rdb.Set("User:" + userId + ":Cheat", 1, 10800000000000).Err()
 			if err != nil {
 				logError("SnatchHandler", 8, err)
 				c.JSON(500, gin.H{

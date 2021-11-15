@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-web/dao"
-	"sort"
 	"strconv"
 )
 
@@ -15,7 +14,8 @@ func WalletListHandler(c *gin.Context) {
 	}
 	uid, err := strconv.ParseInt(userId, 10, 64)
 	logError("WalletListHandler", -2, err)
-	envelopeList, err := rdb.SMembers("User:" + userId + ":Envelopes").Result()
+	//envelopeList, err := rdb.SMembers("User:" + userId + ":Envelopes").Result()
+	envelopeList, err := rdb.ZRevRange("User:" + userId + ":Envelopes", 0, -1).Result()
 	logError("WalletListHandler", 1, err)
 	users, err := rdb.HGetAll("User:" + userId).Result()
 	logError("WalletListHandler", 2, err)
@@ -92,15 +92,15 @@ func WalletListHandler(c *gin.Context) {
 			data = append(data, tmp)
 		}
 	}
-	sort.SliceStable(data, func(i, j int) bool {
-		snatchTimeI, ok := data[i]["snatch_time"].(int64)
-		snatchTimeJ, ok := data[j]["snatch_time"].(int64)
-		if ok == false {
-			fmt.Println("Error happen when convert interface{} to int64!")
-			return false
-		}
-		return snatchTimeI > snatchTimeJ
-	})
+	//sort.SliceStable(data, func(i, j int) bool {
+	//	snatchTimeI, ok := data[i]["snatch_time"].(int64)
+	//	snatchTimeJ, ok := data[j]["snatch_time"].(int64)
+	//	if ok == false {
+	//		fmt.Println("Error happen when convert interface{} to int64!")
+	//		return false
+	//	}
+	//	return snatchTimeI > snatchTimeJ
+	//})
 	c.JSON(200, gin.H{
 		"code": 0,
 		"msg":  "success",

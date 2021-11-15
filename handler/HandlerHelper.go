@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/go-redis/redis"
 	"go-web/allocate"
 	"go-web/dao"
 	"strconv"
@@ -13,12 +14,16 @@ func writeUserToRedis(user dao.User) {
 	userInfo["cur_count"] = user.CurCount
 	userInfo["amount"] = user.Amount
 	err := rdb.HMSet("User:"+strconv.FormatInt(user.ID, 10), userInfo).Err()
+	err = rdb.Expire("User:"+strconv.FormatInt(user.ID, 10), 10800000000000).Err()
 	logError("HandlerHelper, writeUserToRedis", 1, err)
 }
 
 func writeEnvelopesSet(envelope dao.Envelope, userId string) {
 	EID := strconv.FormatInt(envelope.ID, 10)
-	err := rdb.SAdd("User:"+userId+":Envelopes", EID).Err()
+	snatchTime := envelope.SnatchTime
+	//err := rdb.SAdd("User:"+userId+":Envelopes", EID).Err()
+	err := rdb.ZAdd("User:" + userId + "Envelopes", redis.Z{float64(snatchTime), EID}).Err()
+	err = rdb.Expire("User:" + userId + "Envelopes", 10800000000000).Err()
 	logError("HandlerHelper, writeEnvelopesSet", 1, err)
 }
 
@@ -29,6 +34,7 @@ func writeEnvelopeToRedis(envelope dao.Envelope) {
 	envelopeInfo["uid"] = envelope.UID
 	envelopeInfo["snatch_time"] = envelope.SnatchTime
 	err := rdb.HMSet("Envelope:"+strconv.FormatInt(envelope.ID, 10), envelopeInfo).Err()
+	err = rdb.Expire("Envelope:"+strconv.FormatInt(envelope.ID, 10), 10800000000000).Err()
 	logError("HandlerHelper, writeEnvelopeToRedis", 1, err)
 }
 
