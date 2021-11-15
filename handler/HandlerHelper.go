@@ -22,8 +22,8 @@ func writeEnvelopesSet(envelope dao.Envelope, userId string) {
 	EID := strconv.FormatInt(envelope.ID, 10)
 	snatchTime := envelope.SnatchTime
 	//err := rdb.SAdd("User:"+userId+":Envelopes", EID).Err()
-	err := rdb.ZAdd("User:" + userId + "Envelopes", redis.Z{float64(snatchTime), EID}).Err()
-	err = rdb.Expire("User:" + userId + "Envelopes", 10800000000000).Err()
+	err := rdb.ZAdd("User:" + userId + ":Envelopes", redis.Z{float64(snatchTime), EID}).Err()
+	err = rdb.Expire("User:" + userId + ":Envelopes", 10800000000000).Err()
 	logError("HandlerHelper, writeEnvelopesSet", 1, err)
 }
 

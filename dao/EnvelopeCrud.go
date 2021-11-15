@@ -21,13 +21,14 @@ func GetEnvelopesByUID(uid int64) ([]*Envelope, error) {
 	condition := map[string]interface{}{
 		"uid": uid,
 	}
-	err := _db.Table(Envelope{}.TableName()).Where(condition).Find(&envelopes).Order("snatch_time DESC").Error
+	err := _db.Table(Envelope{}.TableName()).Where(condition).Order("snatch_time DESC").Find(&envelopes).Error
 	if err != nil {
 		return nil, err
 	}
 	//sort.SliceStable(envelopes, func(i, j int) bool {
 	//	return envelopes[i].SnatchTime > envelopes[j].SnatchTime
 	//})
+	fmt.Println(envelopes)
 	return envelopes, nil
 }
 
