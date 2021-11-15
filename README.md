@@ -159,20 +159,35 @@ r.Use(tokenbucket.NewLimiter(2000, 2000, 500*time.Millisecond))
 ### 压测情况
 我们使用了wrk进行了open接口的压力测试，具体结果如下：
 ``` Bash
-wrk -t8 -c200 -d20s --latency -s snatch.lua http://221.194.149.43:80/snatch
-Running 20s test @ http://221.194.149.43:80/snatch
-  8 threads and 200 connections
+root@node-mvph6z:~/wrk# wrk -c600 -d60s -t6 --latency -s snatch.lua http://172.16.237.193:80/snatch
+Running 1m test @ http://172.16.237.193:80/snatch
+  6 threads and 600 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    88.46ms   23.37ms 285.75ms   82.49%
-    Req/Sec   262.87     46.15   530.00     87.94%
+    Latency   142.53ms   90.98ms 480.80ms   77.80%
+    Req/Sec   756.91     90.60     1.17k    68.53%
   Latency Distribution
-     50%   98.76ms
-     75%  100.93ms
-     90%  103.07ms
-     99%  108.33ms
-  41911 requests in 20.04s, 7.83MB read
-Requests/sec:   2091.84
-Transfer/sec:    400.17KB
+     50%  103.83ms
+     75%  191.22ms
+     90%  327.49ms
+     99%  361.64ms
+  271363 requests in 1.00m, 49.62MB read
+Requests/sec:   4517.21
+Transfer/sec:    845.82KB
+
+root@node-mvph6z:~/wrk# wrk -c400 -d60s -t6 --latency -s snatch.lua http://172.16.237.193:80/get_wallet_list
+Running 1m test @ http://172.16.237.193:80/get_wallet_list
+  6 threads and 400 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   194.42ms   23.31ms 588.03ms   96.68%
+    Req/Sec   340.41     57.00     0.91k    89.08%
+  Latency Distribution
+     50%  197.93ms
+     75%  198.30ms
+     90%  198.69ms
+     99%  203.05ms
+  122097 requests in 1.00m, 75.37MB read
+Requests/sec:   2032.78
+Transfer/sec:      1.25MB
 ```
 
 ``` lua
@@ -182,7 +197,7 @@ wrk.headers["Content-Type"] = "application/x-www-form-urlencoded"
 
 math.randomseed(os.time())
 request = function()
-    uid = math.random(10000)
+    uid = math.random(100000)
     body = "uid=" .. uid
     return wrk.format(nil, nil, nil, body)
  end
