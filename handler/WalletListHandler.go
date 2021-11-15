@@ -23,7 +23,6 @@ func WalletListHandler(c *gin.Context) {
 	var amount int
 	var data []gin.H
 	if len(users) == 0 {
-		fmt.Println("User from Redis")
 		user, err := dao.GetUser(uid)
 		logError("WalletListHandler", 3, err)
 		if err != nil {
@@ -37,7 +36,6 @@ func WalletListHandler(c *gin.Context) {
 		curCount = user.CurCount
 		writeUserToRedis(user)
 	} else {
-		fmt.Println("User from MySQL")
 		curCount, err = strconv.Atoi(users["cur_count"])
 		logError("WalletListHandler", -3, err)
 		amount, err = strconv.Atoi(users["amount"])
@@ -48,7 +46,6 @@ func WalletListHandler(c *gin.Context) {
 			envelope, err := rdb.HGetAll("Envelope:" + envelopeId).Result()
 			logError("WalletListHandler", 4, err)
 			if len(envelope) != 0 {
-				fmt.Println("Envelopes from Redis")
 				tmp := gin.H{}
 				tmp["envelope_id"] = envelopeId
 				tmp["snatch_time"] = envelope["snatch_time"]
@@ -60,7 +57,6 @@ func WalletListHandler(c *gin.Context) {
 				}
 				data = append(data, tmp)
 			} else {
-				fmt.Println("Envelopes from MySQL")
 				eid, err := strconv.ParseInt(envelopeId, 10, 64)
 				logError("WalletListHandler", -5, err)
 				envelopeFromSql, err := dao.GetEnvelopeByEID(eid)
@@ -79,7 +75,6 @@ func WalletListHandler(c *gin.Context) {
 			}
 		}
 	} else {
-		fmt.Println("Envelopes from MySQL")
 		envelopes, err := dao.GetEnvelopesByUID(uid)
 		logError("WalletListHandler", 6, err)
 		for _, envelope := range envelopes {
@@ -97,15 +92,6 @@ func WalletListHandler(c *gin.Context) {
 			data = append(data, tmp)
 		}
 	}
-	//sort.SliceStable(data, func(i, j int) bool {
-	//	snatchTimeI, ok := data[i]["snatch_time"].(int64)
-	//	snatchTimeJ, ok := data[j]["snatch_time"].(int64)
-	//	if ok == false {
-	//		fmt.Println("Error happen when convert interface{} to int64!")
-	//		return false
-	//	}
-	//	return snatchTimeI > snatchTimeJ
-	//})
 	c.JSON(200, gin.H{
 		"code": 0,
 		"msg":  "success",

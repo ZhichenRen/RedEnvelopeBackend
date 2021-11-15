@@ -1,8 +1,6 @@
 package dao
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type Envelope struct {
 	ID         int64
@@ -28,7 +26,6 @@ func GetEnvelopesByUID(uid int64) ([]*Envelope, error) {
 	//sort.SliceStable(envelopes, func(i, j int) bool {
 	//	return envelopes[i].SnatchTime > envelopes[j].SnatchTime
 	//})
-	fmt.Println(envelopes)
 	return envelopes, nil
 }
 
@@ -41,11 +38,10 @@ func GetEnvelopeByEID(eid int64) (Envelope, error) {
 func CreateCheck(uid int64) (errorCode int) {
 	// TODO
 	// maxCount
-	fmt.Println(uid)
 	var user User
 	err := _db.Where("id = ?", uid).First(&user).Error
-	fmt.Println(err)
 	if err != nil {
+		fmt.Println(err)
 		errorCode = 2
 	} else if user.CurCount > 10 {
 		errorCode = 1

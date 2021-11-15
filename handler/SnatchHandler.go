@@ -120,10 +120,7 @@ func SnatchHandler(c *gin.Context) {
 	logError("SnatchHandler", -4, err)
 	if curCount < maxCount {
 		// TODO
-		// 这里的HIncrBy在高并发情况下似乎会有问题
-		oldCount := curCount
 		curCount, err = rdb.HIncrBy("User:"+userId, "cur_count", 1).Result()
-		fmt.Println("User:", userId, " Old Count: ", oldCount, " New Count:", curCount)
 		logError("SnatchHandler", 10, err)
 		newEnvelope := createEnvelope(userId)
 		writeEnvelopesSet(newEnvelope, userId)
@@ -151,7 +148,6 @@ func SnatchHandler(c *gin.Context) {
 			}, message)
 		if err != nil {
 			fmt.Printf("SnatchHandler label 9, an error occurred when sending message:%s\n", err)
-			fmt.Println(message)
 			c.JSON(500, gin.H{
 				"code": 1,
 				"msg":  "An error occurred when sending message.",

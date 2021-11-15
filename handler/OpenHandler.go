@@ -96,7 +96,6 @@ func OpenHandler(c *gin.Context) {
 			}, message)
 		if err != nil {
 			fmt.Printf("OpenHandler label 6, an error occurred when sending message:%s\n", err)
-			fmt.Println(message)
 		}
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -105,14 +104,6 @@ func OpenHandler(c *gin.Context) {
 			})
 		}
 		wg.Wait()
-		//err = p.Shutdown()
-		//fmt.Println("OpenHandler label 7, shutdown", err)
-		//if err != nil {
-		//	c.JSON(500, gin.H{
-		//		"code": 1,
-		//		"msg":  "An error occurred when closing producer.",
-		//	})
-		//}
 		c.JSON(200, gin.H{
 			"code":    0,
 			"message": "success",

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"go-web/allocate"
 	"go-web/handler"
@@ -19,7 +18,7 @@ func main() {
 	limit1 := tokenbucket.NewLimiter(5000, 2000, 500*time.Millisecond)
 	limit2 := tokenbucket.NewLimiter(5000, 2000, 500*time.Millisecond)
 	limit3 := tokenbucket.NewLimiter(2000, 2000, 500*time.Millisecond)
-	pprof.Register(r)
+	//pprof.Register(r)
 	r.GET("/ping", handler.Ping)
 	r.POST("/snatch", limit1, handler.SnatchHandler)
 	r.POST("/open", limit2, handler.OpenHandler)
