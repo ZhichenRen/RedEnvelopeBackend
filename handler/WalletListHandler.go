@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-web/dao"
+	"sort"
 	"strconv"
 )
 
@@ -91,7 +92,15 @@ func WalletListHandler(c *gin.Context) {
 			data = append(data, tmp)
 		}
 	}
-
+	sort.SliceStable(data, func(i, j int) bool {
+		snatchTimeI, ok := data[i]["snatch_time"].(int64)
+		snatchTimeJ, ok := data[j]["snatch_time"].(int64)
+		if ok == false {
+			fmt.Println("Error happen when convert interface{} to int64!")
+			return false
+		}
+		return snatchTimeI > snatchTimeJ
+	})
 	c.JSON(200, gin.H{
 		"code": 0,
 		"msg":  "success",
